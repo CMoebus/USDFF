@@ -1,0 +1,2167 @@
+### A Pluto.jl notebook ###
+# v0.19.46
+
+using Markdown
+using InteractiveUtils
+
+# ╔═╡ ed574084-878a-4864-9691-54ba63f05b5e
+
+md"
+=====================================================================================
+### SDFF, 2021, ch. 2.1.1, Function Combinators
+#### - an exercise in Julia's [*Slurping* and *Splatting*](https://docs.julialang.org/en/v1/manual/faq/#The-two-uses-of-the-...-operator:-slurping-and-splatting) competence -
+##### file: PCM20220424_SDFF_2.1.1_FunctionCombinators.jl
+##### libraries: Julia 1.10.5/Pluto 0.19.46
+##### code: Pluto/Julia-code by PCM  *** 2022/05/30 ***
+=====================================================================================
+"
+
+# ╔═╡ 320c34d6-499a-443c-b964-caa0f61b3347
+md"
+##### Basics
+"
+
+# ╔═╡ 0ec25c89-5928-43a1-a279-4dac363c8349
+md"
+###### Splatting: array ==> tuple 
+"
+
+# ╔═╡ f919d203-f6e8-48e4-a7c4-5c2f58bc3229
+# the comma is *obligatory* and designates a tuple with only *one* element
+([:a, :b, :c]...,) 
+
+# ╔═╡ a16c0157-cb4b-4e3e-b0bb-3baf0e491ec1
+typeof(([:a, :b, :c]...,))
+
+# ╔═╡ 2b8ece92-d292-4976-b95c-7831bcabc3b9
+md"
+###### Splatting: tuple ==> array
+"
+
+# ╔═╡ 6dc1a242-d077-4929-b235-3b62c9e32ade
+[(:a, :b, :c)...,]  # the comma is *not* necessary in an array
+
+# ╔═╡ b2cd3150-2cb5-4af2-9324-eb3f767577b9
+[(:a, :b, :c)...]   # the comma is *not* necessary in an array
+
+# ╔═╡ 76cc41e9-f5e8-4471-974d-49029c7f2a47
+md"
+###### Splatting: (tuple) ==> tuple  
+###### ... = deletion the *inner* pair of parentheses
+"
+
+# ╔═╡ 1b5df1e2-10a8-45ed-a99a-72685e686a65
+((:a, :b, :c)...,)  # deleting the inner pair makes a comma necessary
+
+# ╔═╡ 5367b9fb-36cb-48a2-b0bb-185773def811
+md"
+###### Slurping (dots in the *parameters*) and Splatting (dots in the *arguments*)
+"
+
+# ╔═╡ 26accf19-ff3c-4c38-ad56-23b4499e3c1c
+md"
+###### 1st n-ary *method* of function object $$list$$
+"
+
+# ╔═╡ d116ae0a-2a7e-4135-9eb1-6a164a7fee86
+# make an n-tuple which should be similar to a list in Scheme
+list(xs...) = (xs...,)  # the comma in the argument list is mandatory
+
+# ╔═╡ 08a016a9-bd5d-4ab5-9277-090d7a1f8fac
+list()
+
+# ╔═╡ 08403ff9-86df-420f-8053-c559022cd5c0
+list(:a)
+
+# ╔═╡ 87868edf-44a9-459d-a41e-eaa148ba1f3d
+list(:a, :b, :c, :d, :e)
+
+# ╔═╡ 56693ef7-ed0e-483b-8b75-60b228413707
+md"
+##### 2.1.1.1 Pluto/Julia code *transpiled* from the [MIT/GNU-Scheme](https://www.gnu.org/software/mit-scheme/) sources in *SDFF* (2021, ch.2.1.1)
+"
+
+# ╔═╡ 4455d006-5392-4a92-be9b-5c0c80dde056
+md"
+##### Composition (SDFF, 2021 p.23f and Fig. 2.1)
+$$(f \circ g)(xs) := f(g(xs))$$
+$$g: xs \mapsto y, f: y \mapsto z$$
+
+
+
+            +----------------------------------------------------------------+
+            |                                                                |
+            |           +-------------+            +-------------+           |
+            |           |             |            |             |           |
+            |    xs     |             |      y     |             |     z     |
+    ------->+---------->+    g(xs)    +----------->+     f(y)    +---------->+------>
+            |  arity n  |             |   arity 1  |             |  arity 1  |
+            |           |             |            |             |           |
+            |           +-------------+            +-------------+           |
+            |                                                                |
+            +----------------------------------------------------------------+
+
+
+compare with Fig. 2.1 (SDFF, 2021, p.24)
+"
+
+# ╔═╡ 5a147951-8cd2-43c1-95e8-f44abd06e4c9
+md"
+###### definition of *n-ary* function $$f(xs)$$
+"
+
+# ╔═╡ 0bc6ac77-6241-45d1-9fb3-dde3ad713c02
+f = (ys...) -> list(:foo, ys...)               
+
+# ╔═╡ 25fbb2d2-8903-41ae-b406-73f1e97fad2c
+f()
+
+# ╔═╡ 1703dc91-be3f-4a27-9673-181f6b24e73f
+:z
+
+# ╔═╡ c16b89ba-1066-4d6b-9ff8-fabe5af98ea6
+f(:z)
+
+# ╔═╡ 022c4d69-35ca-46df-85df-35af9c92767b
+ys = (:a, :b, :c, :d, :e)
+
+# ╔═╡ 6e71fdea-ebdc-4483-984b-2bf2e6092273
+f(ys)                            # *nonsplatted*
+
+# ╔═╡ 2deb8781-1bdb-464a-918d-aa62bbe1ed5a
+f(ys...)                         # *splatted*
+
+# ╔═╡ 0c89714b-b5c7-42d8-8c35-9db99c7c1925
+md"
+###### definition of *n-ary* function $$g(ys)$$
+"
+
+# ╔═╡ bc3dc391-bdd5-4b5e-b7a7-1877d42b1b95
+g = (xs...) -> list(:bar, xs...)                
+
+# ╔═╡ 285f4ca5-d2d6-407f-a12d-ff2b99744a61
+g()
+
+# ╔═╡ ccc6e264-5627-40a2-aab1-8e9bd026c62e
+g(:z)
+
+# ╔═╡ aa0c1447-b181-4c6d-bf41-15fc85384b2d
+xs = ys
+
+# ╔═╡ 9243c110-b7aa-4260-a587-30c8714c7224
+g(xs)                              # *nonsplatted*
+
+# ╔═╡ 5df23c82-d519-4f23-843c-ecf2e4ea5bdf
+g(xs...)                           # *splatted*
+
+# ╔═╡ a1121e23-15ff-4941-ac8d-8b5e9a255103
+f(g()) 
+
+# ╔═╡ bb3af9ea-467e-4642-83a4-3cabf258f208
+f(g(:z))                           # SDFF, 2021, p.24
+
+# ╔═╡ d942a0c3-b59b-4876-a415-9dff8cf77042
+f(g(xs))                           # *nonsplatted*
+
+# ╔═╡ 575be219-84f1-4868-a045-c84423f5ada3
+f(g(xs...))                        # *splatted*
+
+# ╔═╡ 178464b2-1742-47c1-965e-559c4e926fa4
+md"
+###### 1st *method* of higher-order function object '*compose*' (SDFF, 2021, p.23f) ...
+###### input: *two* functions: 
+... the *second* (in temporal order) $$f$$ with in-out-arity $$1\mapsto1$$, 
+... the *first* (in temporal order) $$g$$ with in-out-arity $$n\mapsto1$$
+###### output: *one* composed function $$f \circ g$$ with in-out-arity $$n\mapsto1$$
+"
+
+# ╔═╡ 85d36e60-c30d-11ec-1048-6318b58de85f
+function compose(f, g)          # SDFF, 2021, p.23
+	(args...) -> f(g(args...))  # return a n->1-ary anonymous composed function fg
+end # function
+
+# ╔═╡ d0b5ead3-2f78-476d-b3a9-62b852469393
+md"
+###### application of $$'compose'$$, *indirectly* composing *anonymous* functions
+"
+
+# ╔═╡ 75fa6414-babe-4494-8b04-c89671614c8e
+compose((ys...) -> list(:foo, ys...), (xs...) -> (:bar, xs...))() 
+
+# ╔═╡ 3f697dd8-a081-450b-b669-c41705b5026f
+compose(y -> list(:foo, y), x -> (:bar, x))(:z)                     # SDFF, 2021, p.24
+
+# ╔═╡ 1e61f65e-9ba6-4042-b53c-fb6575583a70
+compose((ys...) -> list(:foo, ys...), (xs...) -> (:bar, xs...))(:z) # SDFF, 2021, p.24
+
+# ╔═╡ 7a2c9f1e-c4ba-4058-9a8e-8802be833c01
+# *nonsplatted*
+compose((ys...) -> list(:foo, ys...), (xs...) -> list(:bar, xs...))(xs)
+
+# ╔═╡ e96e10ff-1476-40c1-995b-3bba2f13f52e
+# *splatted*
+compose((ys...) -> list(:foo, ys...), (xs...) -> list(:bar, xs...))(xs...)  
+
+# ╔═╡ 35177b4d-6317-4054-a570-9c63cb96fece
+md"
+###### composing *predefined* functions $$f, g$$, and application of *compositum*:
+
+$$fg(xs) := (f \circ g)(xs) := f(g(xs))$$
+"
+
+# ╔═╡ ea896922-948a-450e-8d29-10bf6dea760c
+fg = compose(f, g)
+
+# ╔═╡ 546b08ee-2278-403e-83f4-78a779890b47
+fg(:z)                                       # SDFF, 2021, p.24
+
+# ╔═╡ b51ac249-dc7a-41d1-9882-d9bd20eedcec
+fg(xs)                                       # unsplatted
+
+# ╔═╡ 848defbd-6183-44b3-a273-378b965837da
+fg(xs...)                                    # splatted
+
+# ╔═╡ 710b9351-299e-41d6-b01f-6688bd917916
+fg(xs...,)                                   # splatted
+
+# ╔═╡ 5635f7c9-310b-418b-8cef-57e9a3a8a95a
+compose(f, g)(:z)                            # SDFF, 2021, p.24
+
+# ╔═╡ 87a86ebd-9c2c-4cd6-b342-55fbfcdf6968
+compose(f, g)(xs)                            # unsplatted
+
+# ╔═╡ ceb722fa-5729-4b4d-90cb-27bdb8d27ba0
+compose(f, g)(xs...)                         # splatted
+
+# ╔═╡ 1bb979ee-83f0-4c3e-a4a5-cf166319ad06
+md"
+###### 2nd *method* of higher-order function object '*compose*' (SDFF, 2021, p.24)
+"
+
+# ╔═╡ 96162574-72c9-403f-85a4-c83ff516c726
+function compose2(f, g)  # SDFF, 2021, p.24
+	function theComposition(args...)
+		f(g(args...))       # return a n->1-ary named compositum fg(xs) := (f ∘ g)(xs)
+	end # theComposition
+end # compose2
+
+# ╔═╡ 1efbdc56-0dd4-45ad-8fcd-7eb62c9c1c53
+compose2(y -> list(:foo, y), (xs...) -> (:bar, xs...))()
+
+# ╔═╡ 6a36d310-9aff-46df-a91e-d166efdaf55d
+compose2(y -> list(:foo, y), x -> (:bar, x))(:z)     # SDFF, 2021, p.24
+
+# ╔═╡ 4abf8182-d3d4-4efc-b19f-81be158b2fa1
+fg2 = compose2(f, g)
+
+# ╔═╡ b5328776-9f36-48b0-a090-2e4a78aa2c4d
+fg2() 
+
+# ╔═╡ d2f0231e-cc65-40db-8643-6920b084c1d2
+fg2(:z)                                             # SDFF, 2021, p.24
+
+# ╔═╡ eae42ecb-b63d-4e21-a50b-997336108fe2
+fg2(xs)                                             # unsplatted
+
+# ╔═╡ 251f19d1-d9a3-4396-8491-9676ac46d5fd
+fg2(xs...)                                          # splatted
+
+# ╔═╡ def38b89-cb91-4f01-9785-84af6d355083
+md"
+---
+##### Example: Iteration of Function Application (SDFF, p.24f) 
+$$f^n(x) := (f \circ f^{n-1})(x) := f(f^{n-1}(x))$$ 
+"
+
+# ╔═╡ 45fa3167-2ff6-4022-b532-551f015e358e
+identity(x::Number) = x
+
+# ╔═╡ 225964ee-9852-4464-8348-d482a60dc71a
+identity(4711)
+
+# ╔═╡ 39749a94-50d9-46b4-8c7c-18ff5b52e37b
+square(x) = x*x
+
+# ╔═╡ e670ee04-118c-4717-b580-6ea30d319bd6
+md"
+###### *1st* solution approach: classical **nesting of function calls f(g(...))**
+"
+
+# ╔═╡ 7c471fa5-8314-46ba-a43c-3e4c9324746e
+function iterate1(n)
+	function (f)
+		function (x)
+			if n == 0
+				identity(x)
+			else
+				f(iterate1(n-1)(f)(x))
+			end # if
+		end # anonymous with arg (x)
+	end # anonymous with arg (f)
+end
+
+# ╔═╡ 62291513-d98f-482d-b624-1dd01699ca0c
+md"
+###### $$\mathbf{((5^2)^2)^2 = 390625}$$
+"
+
+# ╔═╡ 284dddd8-de11-4c63-a808-05da6d260b78
+iterate1(3)(square)(5)
+
+# ╔═╡ cab65ed5-6ad2-4298-a5bb-66f01799d45a
+md"
+###### *2nd* solution approach: use of **function compose(f, g)(...)**
+"
+
+# ╔═╡ d30308aa-75d8-488e-87c7-d363014cf05c
+function iterate2(n)
+	function (f)
+		function (x)
+			if n == 0
+				identity(x)
+			else
+				compose(f, iterate2(n-1)(f))(x)
+			end # if
+		end # anonymous with arg (x)
+	end # anonymous with arg (f)
+end
+
+# ╔═╡ f7231bd2-c4c1-4941-a71d-d31f7081012e
+md"
+###### $$\mathbf{((5^2)^2)^2 = 390625}$$
+"
+
+# ╔═╡ c9372745-3941-4dae-8ee9-9751121e76b5
+iterate2(3)(square)(5)
+
+# ╔═╡ 355b93d4-8fdb-4cfd-b9b0-ea754303d9b5
+function iterate3(n)
+	function (f)
+		function (x)
+			if n == 0
+				identity(x)
+			else
+				compose2(f, iterate2(n-1)(f))(x)
+			end # if
+		end # anonymous with arg (x)
+	end # anonymous with arg (f)
+end
+
+# ╔═╡ 4a052968-9283-4dbb-925d-13f28dc50ca6
+md"
+###### $$\mathbf{((5^2)^2)^2 = 390625}$$
+"
+
+# ╔═╡ d7465e52-e343-40b3-8bca-cfe24cb59566
+iterate3(3)(square)(5)
+
+# ╔═╡ 397c2c73-f34e-4371-932a-b9efd7575c1d
+md"
+---
+##### Parallel Combination (SDFF, 2021, p.25f and Fig. 2.2)
+"
+
+# ╔═╡ 240be2eb-8b3a-4f3d-924e-7488eef08dce
+md"
+###### 
+$$h \circ (f, g)(xs) := h(f(xs), g(xs))$$
+$$f: xs \mapsto x\;\;\; g: xs \mapsto y\;\;\; h: (x, y) \mapsto z$$
+"
+
+# ╔═╡ fe589b10-9317-4bbc-8b29-dea1e39613ab
+md"
+
+
+             +-----------------------------------------------------------------+
+             |                                                                 |
+             |          +---------------+                                      |
+             |          |               |                                      |
+             |      xs  |               |  x                                   |
+             |    +---->+     f(xs)     +-----+         h ∘ (f, g)             |
+             |    |  n  |               |  1  |                                | 
+             |    |     |               |     |      +---------------+         |   
+             |    |     +---------------+     |  x   |               |         |
+       xs    |    |                           +----->+               |   z     |
+    -------->+--->+                                  |    h(x, y)    +-------->+----> 
+     arity n |    |                           +----->+               | arity 1 |
+             |    |     +---------------+     |  y   |               |         |
+             |    |     |               |     |      +---------------+         |      
+             |    | xs  |               |  y  |                                |
+             |    +---->+     g(xs)     +---->+                                |
+             |       n  |               |  1                                   |
+             |          |               |                                      |
+             |          +---------------+                                      |
+             |                                                                 |
+             +-----------------------------------------------------------------+
+
+
+compare with Fig. 2.2 (SDFF, 2021, p.25)
+"
+
+# ╔═╡ b62af5a4-01bc-42fb-aa60-e4041dc23427
+md"
+###### 1st method of function $$parallelCombine(h, f, g)$$ ...
+ ... generates from an n-ary tuple an *array* of tuples: [(...)(...)], when $$h=vcat$$,
+ ... and generates from an n-ary tuple a *tuple* of tuples: ((...)(...)), when $$h=list:(x, y)\mapsto(x, y).$$
+"
+
+# ╔═╡ 4442c724-96e4-4e9b-b311-874aee5207ab
+function parallelCombine(h, f, g)              # SDFF, 2021, p.26
+	function theCombination(args...)
+		h(f(args...), g(args...))
+	end # theCombination
+	theCombination
+end # parallelCombine
+
+# ╔═╡ 852ece90-a319-4837-a6d1-ef55b6c2cbb6
+parallelCombine(                               # generates an *array* of tuples
+	vcat,                                      # n->1-ary function h
+	(args...) -> (:foo, args...),              # n->1 function f
+	(args...) -> (:bar, args...))()            # n->1 function g and 0-ary argument xs
+
+# ╔═╡ 196de54c-4b2c-4406-b353-9ce2d9e076a8
+# *unsplatted*
+parallelCombine(                               # generates an *array* of tuples
+	vcat,                                      # n->1-ary function h
+	(args...) -> (:foo, args...),              # n->1 function f
+	(args...) -> (:bar, args...))(xs)          # n->1 function g and n-ary argument xs
+
+# ╔═╡ 94558793-fd2e-4682-a37b-a68e65461227
+# SDFF, 2021, p.26, *splatted*
+parallelCombine(                               # generates an *array* of tuples
+	vcat,                                      # n->1-ary function h
+	(args...) -> (:foo, args...),              # n->1 function f
+	(args...) -> (:bar, args...))(xs...)       # n->1 function g and n-ary argument xs
+
+# ╔═╡ ead6d9ed-0908-4b0c-8cbe-7ed8783b8b9b
+parallelCombine(                               # generates a *tuple* of tuples
+	list,                                      # n->1-ary function h
+	(args...) -> (:foo, args...),              # n->1 function f
+	(args...) -> (:bar, args...))()            # n->1 function g and 0-ary argument xs
+
+# ╔═╡ 0e634e0d-f99c-4af4-99eb-b5bad9732736
+# *unsplatted*
+parallelCombine(                               # generates a *tuple* of tuples
+	list,                                      # n->1-ary function h
+	(args...) -> (:foo, args...),              # n->1 function f
+	(args...) -> (:bar, args...))(xs)          # n->1 function g and n-ary argument xs
+
+# ╔═╡ e50a5c98-3ce1-4d2f-bb6e-e86d61bf0a95
+# SDFF, 2021, p.26, *splatted*
+parallelCombine(                               # generates a *tuple* of tuples
+	list,                                      # function h
+	(args...) -> (:foo, args...),              # 3->1 function f
+	(args...) -> (:bar, args...))(xs...)       # 3->1 function g and n-ary argument xs
+
+# ╔═╡ c025b618-baa5-4e84-a8a9-e23d124a5b4f
+md"
+---
+##### Arity (SDFF, 2021, p.26ff.)
+"
+
+# ╔═╡ ebcca7cd-3b2b-427e-abd6-8ef3331a3273
+md"
+##### Spread Combination (SDFF, 2021, Fig.2.3 and p.27f)
+
+$$h \circ (f @ g)(xys) := h(f(xs), g(ys))$$
+$$f: xs \mapsto x\;\;\; g: ys \mapsto y\;\;\; h: (x, y) \mapsto z$$
+
+To get the *arity* of functions with a *get-arity*-function Hanson & Sussman (2021, p27) offer a solution by storing and fetching this information in a *hash-table*. At present we offer this solution using *dictionaries* and an alternative method with *wrappers*. Here we *wrap* function definitions in a *named-tuple* with two slots. One is named *definition* and the other *arity*. So *get-arity* fetches its information from the *arity*-slot of the function wrapper.
+"
+
+# ╔═╡ 5bae7c97-bc1a-4295-ac76-9d6bb6d386ba
+md"
+
+
+             +-----------------------------------------------------------------+
+             |                                                                 |
+             |          +---------------+                                      |
+             |          |               |                                      |
+             |       xs |               |  x                                   |
+             |    +---->+     f(xs)     +-----+         h ∘ (f @ g)            |
+             |    |   n |               |  1  |                                | 
+             |    |     |               |     |      +---------------+         |   
+             |    |     +---------------+     |  x   |               |         |
+       xys   |    |                           +----->+               |   z     |
+    -------->+--->+                                  |    h(x, y)    +-------->+----> 
+      t=n+m  |    |                           +----->+               | arity 1 |
+             |    |     +---------------+     |  y   |               |         |
+             |    |     |               |     |      +---------------+         |      
+             |    |  ys |               |  y  |                                |
+             |    +---->+     g(ys)     +---->+                                |
+             |        m |               |  1                                   |
+             |          |               |                                      |
+             |          +---------------+                                      |
+             |                                                                 |
+             +-----------------------------------------------------------------+
+
+
+compare with Fig. 2.3 (SDFF, 2021, p.27)
+"
+
+# ╔═╡ 9f44ed13-cace-4068-a3bf-d1f0efd1c74e
+md"
+##### 1. Spread Combination with [Dictionary](https://docs.julialang.org/en/v1/base/collections/#Base.IdDict) $$IdDict$$ ... 
+###### ... fetching (in->out)-arity-info from *dictionaries* with $$getArity$$
+
+###### Argument Functions in spreadCombine: 
+$$(h, f, g) \text{ where is } h \in \{vcat, list\} \text{ and } f, g \in \{ foo, bar \}$$
+"
+
+# ╔═╡ a0a90eaa-dbfc-4bb1-ab25-febc46fc27bb
+foo = (args...) -> list(:foo, args...)
+
+# ╔═╡ 8a8abc31-aef5-47cd-9c83-5ac11e2e2eb0
+bar = (args...) -> list(:bar, args...)
+
+# ╔═╡ 9bd2c559-2295-49ff-89f4-129136684364
+foo()                 # argument is empty tuple
+
+# ╔═╡ 29a405dd-5799-4d94-90c0-81f588b73a98
+foo(xs)               # *unsplatted*
+
+# ╔═╡ b3dd4198-d0a8-4a50-97e7-07376aecfed6
+foo(xs...)            # splatted*
+
+# ╔═╡ 09812198-2090-4ebe-87eb-1c09cd3292f4
+bar()                 # argument is empty tuple
+
+# ╔═╡ 28622ba5-69c2-47c2-b878-923055522e47
+bar(xs)               # *unsplatted*
+
+# ╔═╡ 7a0c2ef2-ca19-45ff-bdfb-ce1b8ce8a76e
+bar(xs...)            # *splatted*
+
+# ╔═╡ ea799dd6-190b-496a-ac9f-98b0ddf0599b
+md"
+###### [*IdDict*](https://docs.julialang.org/en/v1/base/collections/#Base.IdDict) is a *hash table* where the keys are always *function object* identities,
+###### ... *inArities* are the input arities of *methods* of function objects.
+###### ... *outArities* are the output arities of *methods* of function objects.
+"
+
+# ╔═╡ b367928b-e0d0-4eaa-8f61-ee4a8c6e4a34
+inArities = IdDict(foo => 2, bar => 3)
+
+# ╔═╡ 8f8d0d07-e0dc-4ee8-802e-bb162873ed06
+outArities = IdDict(foo => 1, bar => 1)
+
+# ╔═╡ 7abb2330-12d4-4f96-8bcd-ba4df61a36e9
+inArities[foo]
+
+# ╔═╡ 1c358203-d666-477d-8d26-2c7aa9ff830f
+inArities[bar]
+
+# ╔═╡ 77a8fe92-2fa9-4f35-924d-fa5225601ff1
+outArities[foo]
+
+# ╔═╡ 79db3e2d-2997-4aff-9466-56c761375ab9
+outArities[bar]
+
+# ╔═╡ 9ea14528-dc8a-4755-8a26-16418af510d8
+begin
+	listHead(n, arg)     =  arg[    1 : n]   # "case 1: unsplatted arg"
+	listHead(n, args...) = args[    1 : n]   # "case 2:   splatted arg"
+	listTail(n, arg)     =  arg[n + 1 : end] # "case 3: unsplatted arg"
+	listTail(n, args...) = args[n + 1 : end] # "case 4:   splatted arg"
+end
+
+# ╔═╡ 6c98d274-9888-4b12-a73f-c4f9d6b9c7cf
+listHead(0,())                  # "case 1: unsplatted arg"
+
+# ╔═╡ 189d0658-16e4-4b24-9a5a-cef2cb68359d
+listTail(0,())                  # "case 3: unsplatted arg"
+
+# ╔═╡ 93092361-36e9-4c52-a5b9-428ba79c8940
+listHead(1, (:a,))              # "case 1: unsplatted arg"
+
+# ╔═╡ 5869758c-af67-4051-b2b4-bda856aa7bdb
+listTail(1, (:a,))              # "case 3: unsplatted arg"
+
+# ╔═╡ 4ecea013-a927-470a-9107-620138dfb9da
+listHead(1, (:a, :b))           # "case 1: unsplatted arg"
+
+# ╔═╡ a768a07f-5c81-42df-bf1b-2a4b74d0c42c
+listTail(1, (:a, :b))           # "case 3: unsplatted arg"
+
+# ╔═╡ 5c33b846-3c47-4700-967c-d5a53b6f01c9
+listHead(2, xs)                 # "case 1: unsplatted arg"
+
+# ╔═╡ 08e37df4-24b3-49bb-bfe6-4407edfd9223
+listTail(2, xs)                 # "case 3: unsplatted arg"
+
+# ╔═╡ e3c8270e-a2a8-4a8a-8144-1250f1aa3269
+listHead(2, xs...)              # "case 3: splatted arg"
+
+# ╔═╡ 4c3c1f47-d04c-4a38-a5ff-64ea6a7b1818
+listTail(2, xs...)              # "case 4: splatted arg"
+
+# ╔═╡ f4149c79-1f14-4071-b122-fbecfd8cc345
+md"
+###### *1st* draft of $$spreadCombine$$ (SDFF, 2021, p. 27)
+"
+
+# ╔═╡ 71fbd4b7-f286-40ad-9712-2c244fd2ae02
+function spreadCombine1(h, f, g)              
+	#---------------------------------------------------------------------------
+	getArity(proc) = inArities[proc]
+    #---------------------------------------------------------------------------
+	listHead(n, arg)     =  arg[    1 : n]   # "case 1: unsplatted arg"
+	listHead(n, args...) = args[    1 : n]   # "case 2:   splatted arg"
+	listTail(n, arg)     =  arg[n + 1 : end] # "case 3: unsplatted arg"
+	listTail(n, args...) = args[n + 1 : end] # "case 4:   splatted arg"
+	#---------------------------------------------------------------------------
+	n = getArity(f)
+    #---------------------------------------------------------------------------
+	function theCombination(args...)
+		h(f(listHead(n, args...)...), g(listTail(n, args...)...)) #*splatting*
+	end # theCombination
+	theCombination
+end # spreadCombine1
+
+# ╔═╡ c9afabf3-408e-48ee-84c8-c5f6499e00c0
+md"
+###### If $$h = vcat$$ then *spreadCombine* generates an *array* of tuples: [(...), (...)].
+"
+
+# ╔═╡ e306c82c-cb68-49f4-a43d-624a4645b90f
+hfg1 = spreadCombine1(vcat, foo, bar) 
+
+# ╔═╡ 696a68c8-a1ab-4eec-a00e-cc2e7b09e3eb
+outArities[hfg1] = 1         # declaration of outArity is made here outside combine
+
+# ╔═╡ fb38226f-497c-4838-a787-e44894ce4531
+hfg1(xs)                                
+
+# ╔═╡ 3b4911c4-d644-45cc-af9b-74a96f41ba1b
+hfg1(xs...)                                  # SDFF, 2021, p.28
+
+# ╔═╡ 3e43ee94-d528-4112-95af-6ca6450c5735
+spreadCombine1(vcat, foo, bar)(xs)
+
+# ╔═╡ 026642cb-3c82-4bb8-9e4a-2b874bde5832
+spreadCombine1(vcat, foo, bar)(xs...)        # SDFF, 2021, p.28
+
+# ╔═╡ 8dcf1970-1fd9-4bb1-8423-9e7dd4c6b227
+md"
+###### If $$h = list$$ then *spreadCombine* generates a *tuple* of tuples: ((...), (...)).
+"
+
+# ╔═╡ 87401239-d818-433b-b59d-81e06f55161c
+hfg2 = spreadCombine1(list, foo, bar) 
+
+# ╔═╡ 5aa64a4f-550a-43b5-a4a6-319bd91a6cc1
+outArities[hfg2] = 1   # declaration of outArity is made here outside combine
+
+# ╔═╡ dd10da38-411f-4073-9883-fbccd40b3f27
+ hfg2(xs)
+
+# ╔═╡ dbefbad8-0f0e-44f5-871a-c782079e3c7a
+ hfg2(xs...)                                   # SDFF, 2021, p.28
+
+# ╔═╡ ee7b60ff-f204-4efb-b23f-b79fbc94a64a
+spreadCombine1(list, foo, bar)(xs)
+
+# ╔═╡ 529eba47-9b24-43c3-b3a7-3377f32cadfc
+spreadCombine1(list, foo, bar)(xs...)           # SDFF, 2021, p.28
+
+# ╔═╡ 16e923bb-5162-41b0-ae69-f21f84bfa1c3
+md"
+###### *2nd* draft of with Spread Combine (SDFF, 2021, p. 27f and Fig 2.3)
+"
+
+# ╔═╡ c6260789-515c-4eea-a321-000e2f63f708
+md"
+
+
+             +-----------------------------------------------------------------+
+             |                                                                 |
+             |          +---------------+                                      |
+             |          |               |                                      |
+             |       xs |               |  x                                   |
+             |    +---->+     f(xs)     +-----+         h ∘ (f @ g)            |
+             |    |   n |               |  1  |                                | 
+             |    |     |               |     |      +---------------+         |   
+             |    |     +---------------+     |  x   |               |         |
+       xys   |    |                           +----->+               |   z     |
+    -------->+--->+                                  |    h(x, y)    +-------->+----> 
+     t = n+m |    |                           +----->+               | arity 1 |
+             |    |     +---------------+     |  y   |               |         |
+             |    |     |               |     |      +---------------+         |      
+             |    |  ys |               |  y  |                                |
+             |    +---->+     g(ys)     +---->+                                |
+             |        m |               |  1                                   |
+             |          |               |                                      |
+             |          +---------------+                                      |
+             |                                                                 |
+             +-----------------------------------------------------------------+
+
+ 
+"
+
+# ╔═╡ 74d759c2-9558-42f5-9723-396f2d87ab7c
+function spreadCombine2(h, f, g)
+	#-----------------------------------------------------------------------------
+	getArity(proc::Function)::Int = inArities[proc]
+	#-----------------------------------------------------------------------------
+	function restrictArity(theCombination, outArity)
+		outArities[theCombination] = outArity  # decl. of outarity of combination
+		theCombination
+	end
+	#-----------------------------------------------------------------------------
+	listHead(n, arg)     =  arg[    1 : n]   # "case 1: unsplatted arg"
+	listHead(n, args...) = args[    1 : n]   # "case 2:   splatted arg"
+	listTail(n, arg)     =  arg[n + 1 : end] # "case 3: unsplatted arg"
+	listTail(n, args...) = args[n + 1 : end] # "case 4:   splatted arg"
+	#---------------------------------------------------------------------------------
+	n = getArity(f) # decl. of *output*-arity is made in function restrictArity
+	m = getArity(g) # decl. of *output*-arity is made in function restrictArity
+	t = n + m
+    #---------------------------------------------------------------------------------
+	function theCombination(args...)
+		h(f(listHead(n, args...)...,), g(listTail(n, args...)...,)) #*splatting*
+	end # theCombination
+	restrictArity(theCombination, 1)   # declaration of outarity of combination
+	theCombination
+end # spreadCombine2
+
+# ╔═╡ b424345d-b1cf-44e6-9002-f87d22d6f948
+hfg5 = spreadCombine2(vcat, foo, bar)
+
+# ╔═╡ 04cd1a4b-4d58-48f6-a53e-e92deccf1cb4
+outArities[hfg5]
+
+# ╔═╡ 0ded6131-cb55-498d-a485-6873d28754b3
+hfg5(xs) 
+
+# ╔═╡ 7fbda4e4-3590-43f4-8dec-f68931c7cdcf
+hfg5(xs...)                                      # SDFF, 2021, p.28
+
+# ╔═╡ 24d9b5ad-0bc6-4f15-8db5-295c81130b29
+spreadCombine2(vcat, foo, bar)(xs) 
+
+# ╔═╡ 74f6f44f-c994-45fa-af3a-29ec734f92db
+spreadCombine2(vcat, foo, bar)(xs...)            # SDFF, 2021, p.28
+
+# ╔═╡ 590759d6-faaf-4093-acb4-1eaaf558825e
+hfg6 = spreadCombine2(list, foo, bar)
+
+# ╔═╡ ee70f606-7526-4be8-b736-b62cb3e61f7e
+hfg6(xs) 
+
+# ╔═╡ 0f5365d8-2f1a-4e07-9b5c-336d5b034990
+hfg6(xs...)                                      # SDFF, 2021, p.28
+
+# ╔═╡ f06c5e35-948d-4007-b37f-13d220c63c0c
+outArities[hfg6]
+
+# ╔═╡ 14aaa93a-c89b-4354-a9c0-89a83e398748
+spreadCombine2(list, foo, bar)(xs) 
+
+# ╔═╡ 35d4e8f4-74f9-44e4-bfce-79d8bbe31343
+spreadCombine2(list, foo, bar)(xs...)             # SDFF, 2021, p.28
+
+# ╔═╡ 8c42e3e4-e9c7-48e1-9d11-84f574a2b559
+md"
+###### *3rd* draft of with Spread Combine (SDFF, 2021, p. 28)
+###### ... with *assertion* in *Paranoid Programming Style* (PPS)
+"
+
+# ╔═╡ 057050b6-8187-497e-a3a4-42e9f6b13673
+function spreadCombine3(h, f, g)
+	#------------------------------------------------------------------------------
+	getArity(proc) = inArities[proc]
+	#------------------------------------------------------------------------------
+	function restrictArity(theCombination, outArity)
+		outArities[theCombination] = outArity  # decl. of out-arity of combination
+		theCombination
+	end
+	#------------------------------------------------------------------------------
+	listHead(n, arg)     =  arg[    1 : n]   # "case 1: unsplatted arg"
+	listHead(n, args...) = args[    1 : n]   # "case 2:   splatted arg"
+	listTail(n, arg)     =  arg[n + 1 : end] # "case 3: unsplatted arg"
+	listTail(n, args...) = args[n + 1 : end] # "case 4:   splatted arg"
+	#---------------------------------------------------------------------------------
+	n = getArity(f)   # decl. of *output* arity is made in function restrictArity
+	m = getArity(g)   # decl. of *output* arity is made in function restrictArity
+	t = n + m
+    #---------------------------------------------------------------------------------
+	function theCombination(args...)
+		assert(successCondition, largs, t) =
+			if successCondition == true
+				nothing 
+			else
+				error("error in theCombination: length(args)=$largs <> $t || <> 1")
+			end # if
+		#-----------------------------------------------------------------------------
+		# the 2nd equality constraint has to be added to cover the unsplatted xs
+		assert(length(args) == t || length(args) == 1, length(args), t) 
+		h(f(listHead(n, args...)...,), g(listTail(n, args...)...,)) #*splatting*
+	end # theCombination
+	restrictArity(theCombination, 1)   # declaration of outarity of combination
+	theCombination
+end # spreadCombine3
+
+# ╔═╡ d5da5b14-c041-4782-b64e-5016b77e7c9a
+hfg7 = spreadCombine3(vcat, foo, bar)
+
+# ╔═╡ 5df21f49-ba95-4c39-bb41-c2e4ed2bbe41
+outArities[hfg7] 
+
+# ╔═╡ b8db0897-7dad-41f7-ba53-95db22614ec1
+hfg7(xs) 
+
+# ╔═╡ df2b9032-015d-4dd8-9198-1e4396b8fb57
+hfg7(xs...)                                  # SDFF, 2021, p.28
+
+# ╔═╡ 86dbc6b3-ca68-4858-90a0-5169d94ddf71
+spreadCombine3(vcat, foo, bar)(xs) 
+
+# ╔═╡ b8d82075-186d-4f4f-84e2-0d5a1a4fbe52
+spreadCombine3(vcat, foo, bar)(xs...)        # SDFF, 2021, p.28
+
+# ╔═╡ 2186ead9-7a02-4367-8ccf-0d7a25bbcb5c
+hfg8 = spreadCombine3(list, foo, bar)
+
+# ╔═╡ aad8770a-f4a7-4f09-bd68-ad037ff993be
+outArities[hfg8] 
+
+# ╔═╡ 40b59737-aac4-4cf4-ab44-63f6fd943b35
+hfg8(xs) 
+
+# ╔═╡ 6ff3af02-767b-4eb6-b5f5-1fee20d7834a
+hfg8(xs...)                                    # SDFF, 2021, p.28
+
+# ╔═╡ 4463844f-b0bc-4b7d-97c9-2c0b6750a642
+spreadCombine3(list, foo, bar)(xs) 
+
+# ╔═╡ af4585de-ee9b-4fdc-9511-e7044ad880fc
+spreadCombine3(list, foo, bar)(xs...)          # SDFF, 2021, p.28
+
+# ╔═╡ 3df5c4c3-1eb1-4cea-9dda-38ec94aed337
+md"
+---
+##### *Multiple* Values (SDFF, 2021, p. 30f and Fig 2.4)
+"
+
+# ╔═╡ 71e04bde-b23b-43e5-a8e1-7853d36ca448
+md"
+
+
+             +-----------------------------------------------------------------+
+             |                                                                 |
+             |          +---------------+                                      |
+             |          |               |                                      |
+             |      xss |               | xs                                   |
+             |    +---->+     f(xs)     +-----+         h ∘ (f @ g)            |
+             |    |   n |               |  p  |                                | 
+             |    |     |               |     |      +---------------+         |   
+             |    |     +---------------+     |  xs  |               |         |
+     xssyss  |    |                           +----->+               |   z     |
+    -------->+--->+         (f @ g)                  |   h(xs, ys)   +-------->+----> 
+     t = n+m |    |                           +----->+               | arity 1 |
+             |    |     +---------------+     |  ys  |               |         |
+             |    |     |               |     |      +---------------+         |      
+             |    | yss |               | ys  |                                |
+             |    +---->+     g(ys)     +---->+                                |
+             |        m |               |  q                                   |
+             |          |               |                                      |
+             |          +---------------+                                      |
+             |                                                                 |
+             +-----------------------------------------------------------------+
+
+ 
+"
+
+# ╔═╡ 8f3bfae3-041c-471e-b2b1-04c50b72a448
+md"
+###### *4th* version of with Spread Combine (SDFF, 2021, p.31)
+###### ... with *assertion* in $$spreadApply$$ in *Paranoid Programming Style* (PPS)
+"
+
+# ╔═╡ d4970dc9-2b9f-4cdf-81bc-f31f27ad790e
+# Scheme's 'values' returns multiple values
+# here Julia's values can only a single tuple 
+#    which has to be *destructured* into *single* values
+values(args...) = args     
+
+# ╔═╡ 12d6e526-72ad-40cb-865f-9d522116e145
+x, y = values( +(2, 3), *(2, 3))  # destructuring
+
+# ╔═╡ 38d5a209-76d3-4f4c-bc1c-e62f0e66d191
+x                                 # destructuring x
+
+# ╔═╡ a6558d4e-0466-4535-a725-8d9fff72d6af
+y                                 # destructuring y 
+
+# ╔═╡ 4c4ad8b4-802a-4b05-bffa-2d9506c2846d
+md"
+Scheme's '*values*' library function returns *muliple* values
+Julia's '*values*' private function returns a *single* tuple, which has to be *destructured* into single values.
+"
+
+# ╔═╡ 86f655e4-0f4a-40e2-bd42-786efb0e2089
+function spreadApply(f, g)                      # SDFF, 2021, p.30
+	#------------------------------------------------------------------------------
+	function restrictArity(theCombination, outArity)
+		outArities[theCombination] = outArity   # decl. of out-arity of combination
+		theCombination                          # return theCombination
+	end
+	#------------------------------------------------------------------------------
+	values(args...) = args
+	#------------------------------------------------------------------------------
+	getArity(proc::Function)::Int = inArities[proc]
+	#------------------------------------------------------------------------------
+	listHead(n, arg)     =  arg[    1 : n]   # "case 1: unsplatted arg"
+	listHead(n, args...) = args[    1 : n]   # "case 2:   splatted arg"
+	listTail(n, arg)     =  arg[n + 1 : end] # "case 3: unsplatted arg"
+	listTail(n, args...) = args[n + 1 : end] # "case 4:   splatted arg"
+	#---------------------------------------------------------------------------------
+	n = getArity(f)  # decl. of *output* arity is made in function restriactArity
+	m = getArity(g)  # decl. of *output* arity is made in function restriactArity
+	t = n + m
+    #---------------------------------------------------------------------------------
+	function theCombination(args...)
+		#-----------------------------------------------------------------------------
+		assert(successCondition, largs, t) =
+			if successCondition == true
+				nothing 
+			else
+				error("error in theCombination: length(args)=$largs <> $t ||  $largs<> 1") 
+			end # if
+		#-----------------------------------------------------------------------------
+		# the 2nd equality constraint has to be added to cover the case 'xs = (...)'
+		assert(length(args) == t || length(args) == 1, length(args), t)
+		# *splatting* and return values' function value tuple
+		values(f(listHead(n, args...)...,), g(listTail(n, args...)...,)) 
+	end # theCombination
+	restrictArity(theCombination, 2)     # declaration of out-arity of combination
+end # spreadApply
+
+# ╔═╡ 86ae6516-e504-45fb-96e4-1b235e20afb2
+fValue1, gValue1 = spreadApply(foo, bar)(xs)    # value is a *tuple*
+
+# ╔═╡ c815f05c-cf8d-4b13-b244-2253bf89ce65
+fValue1                                         # destructuring of returned tuple
+
+# ╔═╡ 7ad800a2-16f7-4271-9b5d-6f06ee987ac0
+gValue1                                         # destructuring of returned tuple
+
+# ╔═╡ 25eb7873-598d-44fe-aa59-e25def5b1996
+fValue2, gValue2 = spreadApply(foo, bar)(xs...) # destructuring of returned tuple
+
+# ╔═╡ 1311fdd4-9656-4cc8-b606-e3df33984d90
+fValue2                                         # destructuring of returned tuple
+
+# ╔═╡ 30714f62-2032-49c8-a890-df27751c1612
+gValue2                                         # destructuring of returned tuple
+
+# ╔═╡ 9c1ed6c8-bc35-442e-9f85-39d401542c1d
+fg9 = spreadApply(foo, bar)         # compositum (= composite function) fg := (f o g)
+
+# ╔═╡ 7b7e8126-2004-4857-95b5-779c359d5673
+outArities[fg9]
+
+# ╔═╡ dae4563a-b828-4d8f-a0c1-effc7582af1d
+fValue3, gValue3 = fg9(xs)                             # SDFF, 2021, p.31
+
+# ╔═╡ d34c4393-0c9a-4510-977c-bb4c077bd8b8
+fValue4, gValue4 = fg9(xs...)                          # SDFF, 2021, p.31
+
+# ╔═╡ 2c2eb8ef-f216-4383-bb47-894ec603c677
+foo2 = (args...) -> list(list(:foo, args...))
+
+# ╔═╡ 126e48af-36b7-4190-b3df-372105fcd153
+inArities[foo2] = 2
+
+# ╔═╡ a3ff3a02-8b8c-4a5b-a72d-9a88366f0480
+outArities[foo2] = 1
+
+# ╔═╡ 0e70b3e0-b51a-457d-8590-278b14af3972
+bar2 = (args...) -> list(list(:bar, args...))
+
+# ╔═╡ 13d73103-2513-4239-8cd5-de8e047fd494
+inArities[bar2] = 2
+
+# ╔═╡ 22268f5e-ea3c-419d-b7b4-bc0ca15a4966
+outArities[bar2] = 1
+
+# ╔═╡ d34e8950-0bb7-4440-99f9-5e16930352b9
+# hfg9 = spreadCombine4(list, foo2, bar2)                # SDFF, 2021, p.31
+
+# ╔═╡ 3d296ea8-f621-4dd3-8306-df9ec006bd9c
+function compose3(h, fg)                              # SDFF, 2021, p.32
+	#------------------------------------------------------------------------------
+	function restrictArity(theCombination, outArity)
+		outArities[theCombination] = outArity   # decl. of out-arity of combination
+		theCombination                          # return theCombination
+	end
+	#------------------------------------------------------------------------------
+	function theComposition(args...)
+		fgValues1, fgValues2 = fg(args...)      # destructuring of fg's value tuple
+		h(fgValues1, fgValues2)
+	end # theComposition
+	restrictArity(theComposition, 2)            # declaration of out-arity 
+end # compose3
+
+# ╔═╡ b26bc93f-017e-4324-a9f0-b4f2017363f4
+function spreadCombine4(h, f, g)                       # SDFF, 2021, p.31
+	compose3(h, spreadApply(f, g))
+end
+
+# ╔═╡ b5fc5198-64a7-44e9-aeed-b6a6551117ec
+hfg9 = spreadCombine4(list, foo, bar) 
+
+# ╔═╡ 666ca27e-ff82-45cb-bb4c-66904a275841
+outArities[hfg9]
+
+# ╔═╡ 3f7676d2-97aa-4d1c-a3de-af7227a1f287
+hfg9(xs)       
+
+# ╔═╡ 5283b7c9-f073-4be4-a4b9-cccf9024f3b3
+spreadCombine4(list, foo2, bar2)(xs)                  # SDFF, 2021, p.31
+
+# ╔═╡ 5674d593-d9af-4bf4-b128-d04a99eff721
+hfg10 = spreadCombine4(vcat, foo2, bar2)
+
+# ╔═╡ a91cf4a8-41ab-41ee-83ee-c93ef598754b
+hfg10(xs)                                             # SDFF, 2021, p.31
+
+# ╔═╡ 47b1a328-e100-4969-82bc-5cd08106f1b5
+md"
+###### 1st *method* of function $$barbaz$$
+"
+
+# ╔═╡ 72717c80-3b65-4ddf-a84c-8814eacab044
+function barbaz(x::Symbol) 
+	list(:bar, x), list(:baz, x)
+end
+
+# ╔═╡ 94b6be3c-f93e-4430-8308-a047a0bec842
+md"
+###### 2nd *method* of function $$barbaz$$
+"
+
+# ╔═╡ 49bb3933-5eaa-4e53-9a64-c7d9ab956f25
+function barbaz(x::Tuple)                  # unsplatted
+	list(:bar, x...), list(:baz, x...)
+end
+
+# ╔═╡ 0dc910b1-8b98-4f54-baf2-ddad514e85e5
+md"
+###### 3rd *method* of function $$barbaz$$
+"
+
+# ╔═╡ 5a7cf7d7-4a5a-4dfa-a39e-75e9a422fc05
+function barbaz(xs...)                     # splatted
+	list(:bar, xs...), list(:baz, xs...)
+end
+
+# ╔═╡ 256718c8-bb53-46f7-ba2b-bc28b8ecb9a4
+fv1, gv1 = barbaz(:z)
+
+# ╔═╡ f9bca9e6-04ad-4698-90f2-7f0b8207484e
+fv1
+
+# ╔═╡ 05c12e31-9ce6-4392-975b-1ebd30688930
+gv1
+
+# ╔═╡ c92af4fe-832c-47d5-ac32-555b081ec0ea
+xs
+
+# ╔═╡ e5646279-efb2-430b-a312-a99b7448c270
+fv2, gv2 = barbaz(xs)
+
+# ╔═╡ 1e10a051-c220-46d2-b26f-e2325bf73aec
+fv2
+
+# ╔═╡ 96226920-366b-400f-91b8-bb0efa82037a
+gv2
+
+# ╔═╡ fc0de10b-dce8-4850-98a9-3058a9e7abdb
+fv3, gv3 = barbaz(xs...)
+
+# ╔═╡ b8cc8b80-646d-4a0d-9b71-6838f39aa03f
+fv3
+
+# ╔═╡ a0912292-076e-4df2-942e-cb4b9e53a584
+gv3
+
+# ╔═╡ 4b545f6a-d825-4e16-8c0e-223e35173166
+inArities[barbaz] = 5
+
+# ╔═╡ a5301b93-d71f-431e-9fa6-8b1f5e008b29
+outArities[barbaz] = 2
+
+# ╔═╡ d310fa43-84d2-4e83-ba5b-11b3362af763
+function ab(args...) 
+	vcat(:foo, args...)                        # SDFF, 2021, p.32
+end
+
+# ╔═╡ 0bcea886-47da-4294-9c3b-f4bec614ade8
+inArities[ab] = 2
+
+# ╔═╡ 066d0139-60f2-43b8-a9e2-a41c0941d691
+outArities[ab] = 2
+
+# ╔═╡ c4e7885c-300d-47a6-8485-b7abda96082e
+ab(foo(:z), bar(:z))
+
+# ╔═╡ 27a03445-0c4a-4b0b-87d2-b44188008d3c
+compose3(ab, barbaz)(:z)                       # SDFF, 2021, p.32
+
+# ╔═╡ cf270a21-8138-474d-bf08-fdb379fe552c
+compose3(ab, barbaz)(xs)                       
+
+# ╔═╡ 044cc0e7-f8a5-4e70-ad4b-6a41c07ba42b
+compose3(ab, barbaz)(xs...)                    # SDFF, 2021, p.32
+
+# ╔═╡ 96f0288c-163d-4e13-bce7-5fc0c4a08162
+append(tuple1, tuple2) = (tuple1..., tuple2...)
+
+# ╔═╡ 922ca631-2d54-4d1b-8d40-4031894a5480
+append((1, 2), (3, 4))
+
+# ╔═╡ 8b83411b-ed6a-436e-9b3e-1fd324cb6876
+md"
+###### $$spreadApply2$$ with $$f$$ and $$g$$ returning *multiple* values (SDFF, 2021, p.32)
+"
+
+# ╔═╡ 173e1abc-4591-4197-b12a-ccc85b496c29
+function spreadApply2(f, g)                     # SDFF, 2021, p.32
+	#------------------------------------------------------------------------------
+	function restrictArity(theCombination, outArity)
+		outArities[theCombination] = outArity   # decl. of out-arity of combination
+		theCombination                          # return theCombination
+	end
+	#------------------------------------------------------------------------------
+	values(args...) = args
+	#------------------------------------------------------------------------------
+	getArity(proc) = inArities[proc]
+	#------------------------------------------------------------------------------
+	listHead(n, arg)     =  arg[    1 : n]   # "case 1: unsplatted arg"
+	listHead(n, args...) = args[    1 : n]   # "case 2:   splatted arg"
+	listTail(n, arg)     =  arg[n + 1 : end] # "case 3: unsplatted arg"
+	listTail(n, args...) = args[n + 1 : end] # "case 4:   splatted arg"
+	#------------------------------------------------------------------------------
+	append(tuple1, tuple2) = (tuple1..., tuple2...)
+	#---------------------------------------------------------------------------------
+	n = getArity(f)  # decl. of *output* arity is made in function restriactArity
+	m = getArity(g)  # decl. of *output* arity is made in function restriactArity
+	t = n + m
+    #---------------------------------------------------------------------------------
+	function theCombination(args...)
+		#-----------------------------------------------------------------------------
+		assert(successCondition, largs, t) =
+			if successCondition == true
+				nothing 
+			else
+				error("error in theCombination: length(args)=$largs <> $t || $largs <> 1") 
+			end # if
+		#-----------------------------------------------------------------------------
+		# the 2nd equality constraint has to be added to cover the case 'xs = (...)'
+		assert(length(args) == t || length(args) == 1, length(args), t) 
+		# *splatting* and return values' function value tuple
+		fValues, gValues = 
+			values(f(listHead(n, args...)...,), g(listTail(n, args...)...,)) 
+		append(fValues, gValues)
+	end # theCombination
+	restrictArity(theCombination, 2)     # declaration of out-arity of combination
+	end # spreadApply2
+
+# ╔═╡ 52c1c548-6916-4f9e-b854-02abca7eedda
+function ff(args...) 
+	args
+end
+
+# ╔═╡ 537d98fb-5f15-4983-beca-0fe3b77c41da
+spreadApply2(foo, bar)(xs)
+
+# ╔═╡ 906a226f-ee54-415f-b53d-7afd80befdc5
+spreadApply2(foo, bar)(xs...)
+
+# ╔═╡ d2db5133-349e-4c5c-845c-6635b3c4cdca
+fValue5, gValue5 = spreadApply2(foo, bar)(xs)
+
+# ╔═╡ 682180c3-c1c3-404b-a480-8e10e8fb7a7f
+fValue7, gValue7 = spreadApply2(foo, bar)(xs...)
+
+# ╔═╡ b714d385-b2a6-4a37-a5a8-fac352e428ef
+function xy(x, y) 
+	values(x, y)
+end
+
+# ╔═╡ 309e0b1c-96f7-41bf-94d6-fe5612903f98
+inArities[xy] = 2
+
+# ╔═╡ f5c4d7e5-2acb-47b0-b986-f6baa796987b
+outArities[xy] = 1
+
+# ╔═╡ e3860454-623a-4616-a1fc-9fb520603caf
+x1, y1 = xy(1, 2)
+
+# ╔═╡ a089cdf7-52a0-4028-84aa-c34a97b926c6
+x1
+
+# ╔═╡ 7039cb60-7f75-4c04-9c44-cfd8d4dd8a8c
+y1
+
+# ╔═╡ d8f74bed-818b-4c95-986d-730cb9cae3d9
+function uvw(u, v, w)
+	values(u, v, w)
+end
+
+# ╔═╡ b47aef90-94af-405d-acec-10b827a776e6
+inArities[uvw] = 3
+
+# ╔═╡ bfc85c03-444d-4eaa-8a7e-d7bc0d560cd7
+outArities[uvw] = 1
+
+# ╔═╡ 565b0d24-7dc1-4fbd-99da-c9616db5f47b
+u1, v1, w1 = uvw(3, 4, 5)
+
+# ╔═╡ 5f169cac-c07d-48a2-ba8c-ef2ab40f8456
+u1
+
+# ╔═╡ afc22020-592e-4f19-9c7d-4fd391bc041e
+v1
+
+# ╔═╡ 74240764-37c4-4fe5-9583-25f5d3eef038
+w1
+
+# ╔═╡ 69400d19-c07a-469a-8a95-2d13f6903a72
+spreadApply2(xy, uvw)(xs)
+
+# ╔═╡ 5d7fd2b3-a842-4925-b0e8-5a2da86726b9
+spreadApply2(xy, uvw)(xs...)
+
+# ╔═╡ 0e4b84a6-a4ff-4625-9f26-e33aa489daf1
+function compose4(h, fg)                        # SDFF, 2021, p.32
+	#------------------------------------------------------------------------------
+	function restrictArity(theCombination, outArity)
+		outArities[theCombination] = outArity   # decl. of out-arity of combination
+		theCombination                          # return theCombination
+	end
+	#------------------------------------------------------------------------------
+	function theComposition(args...)
+		h(fg(args...)...)
+	end # theComposition
+	restrictArity(theComposition, 2)            # declaration of out-arity 
+end # compose4
+
+# ╔═╡ 33b0df58-6241-4a00-b636-43014bfd3177
+compose4(list, spreadApply2(xy, uvw))
+
+# ╔═╡ 46a21d48-3561-43b0-9795-e4e90451d8a2
+compose4(list, spreadApply2(xy, uvw))(xs)
+
+# ╔═╡ da52144d-358b-40a8-a1f7-e09150d56cf3
+compose4(list, spreadApply2(xy, uvw))(xs...)
+
+# ╔═╡ d0a963bd-df95-4f2c-af58-031687549794
+compose4(vcat, spreadApply2(xy, uvw))(xs)
+
+# ╔═╡ 210f0ef6-f173-43d4-983d-7ce79486d7cc
+compose4(vcat, spreadApply2(xy, uvw))(xs...)
+
+# ╔═╡ 4778ed85-f586-4c69-9f18-bc685a9cda80
+function spreadCombine5(h, f, g) 
+	compose4(h, spreadApply2(f, g))              
+end
+
+# ╔═╡ 1cb9819b-e0bb-4554-8000-c439f1bec154
+hfg11 = spreadCombine5(list, xy, uvw) 
+
+# ╔═╡ b3266a7d-134e-4533-922b-61822a41611d
+hfg11(xs)                                                # SDFF, 2021, p.32
+
+# ╔═╡ feea6c0f-0aab-41c1-b94a-0b081e6cc6a6
+hfg11(xs...)                                             # SDFF, 2021, p.32
+
+# ╔═╡ 2657369e-7462-42b9-befe-cd684fae5cd0
+spreadCombine5(list, xy, uvw)(xs)                        # SDFF, 2021, p.32
+
+# ╔═╡ c7a0333f-9aa7-48ec-8baa-e87bf7c8f091
+spreadCombine5(list, xy, uvw)(xs...)                     # SDFF, 2021, p.32
+
+# ╔═╡ 2b6b7c90-3a74-41dd-9ac7-10b6c4e90c29
+hfg12 = spreadCombine5(vcat, xy, uvw)
+
+# ╔═╡ 88e22b65-424c-4daf-9b1a-a6ccdb064c3e
+hfg12(xs)                                                # SDFF, 2021, p.32
+
+# ╔═╡ 3d9b45af-7993-459d-b38f-bbcc191058a4
+hfg12(xs...)                                             # SDFF, 2021, p.32
+
+# ╔═╡ 71645559-af66-4010-af11-d6fca526c256
+spreadCombine5(vcat, xy, uvw)(xs)                        # SDFF, 2021, p.32
+
+# ╔═╡ e8c94d3a-1507-4378-a5cc-03d4a2616c4c
+spreadCombine5(vcat, xy, uvw)(xs...)                     # SDFF, 2021, p.32
+
+# ╔═╡ 21906bd9-c185-44e2-b7e1-0b6112631710
+inArities[foo]
+
+# ╔═╡ 66e1dabb-59dc-4171-901e-b8431d445ce4
+inArities[bar]
+
+# ╔═╡ b83c8bd2-266c-4c84-9f2a-8bf124fa9780
+spreadCombine5(list, foo, bar)(xs)
+
+# ╔═╡ f51f9f68-fa41-4330-a8ea-1c618268892d
+spreadCombine5(list, foo, bar)(xs...)
+
+# ╔═╡ 43e94134-5d4d-48b3-8bff-420989096f06
+md"
+---
+##### 2. Spread Combination with Named Tuples ... 
+###### ... *wrapping* functions with *named* tuples
+###### *first* draft of  with wrapper Spread Combine (SDFF, p.27)
+"
+
+# ╔═╡ 7313798b-65be-4b48-8fde-d1a96a5d83a2
+fooWrapped = (definition = (x, y) -> (:foo, x, y), arity = 2) 
+
+# ╔═╡ 50d98fb9-1e4e-4b95-b03d-5d61105b707c
+fooWrapped.definition(:a, :b)
+
+# ╔═╡ 813c789a-a429-45bd-866d-ad7ad6efa914
+fooWrapped.arity
+
+# ╔═╡ 9983badd-81bb-4063-95fd-f0a18beccad8
+barWrapped = (definition = (u, v, w) -> (:bar, :c, :d, :e), arity = 3)
+
+# ╔═╡ a3146af8-71fc-4b75-aaa5-02d4e8c8e987
+barWrapped.definition(:c, :d, :e)
+
+# ╔═╡ f58da82f-3c24-4c9c-8f02-b6232e5a6ae5
+barWrapped.arity
+
+# ╔═╡ 474e8557-05d8-448c-84e5-bba1d4a52ef1
+md"
+###### Slurping and Splatting
+This use of ... for combining many different arguments into a single argument is called [*slurping*](https://docs.julialang.org/en/v1/manual/faq/#The-two-uses-of-the-...-operator:-slurping-and-splatting) 
+
+the ... operator is also used to cause a single function argument to be split apart into many different arguments when used in the context of a function call. This use of ... is called [*splatting*](https://docs.julialang.org/en/v1/manual/faq/#The-two-uses-of-the-...-operator:-slurping-and-splatting)
+"
+
+# ╔═╡ c4e40059-428e-4c35-8287-3cc6e26e93ab
+md"
+###### Signatures of spreadCombine: 
+$$(foo, bar) \text{ wheras } foo, bar = \text{ named tuples }$$
+$$(h, foo, bar) \text{ wheras } h = vcat, \text{ or } h = list \text{ and } foo, bar = \text{ named tuples }$$
+"
+
+# ╔═╡ 2b4a70fb-a683-4d8d-94f8-a6b655f92882
+md"
+###### 1st 3-ary method of function *spreadCombine* ...
+###### ... generates an *array* of tuples: [(...)(...)], when $$h=vcat$$,
+###### ... generates  a *tuple* of tuples: ((...)(...)), when $$h=list.$$
+"
+
+# ╔═╡ 9dac659c-5d8b-4f37-acb6-f4e7ae33e785
+function spreadCombine6(h, fd, gd)             # 3-ary method with parameter h
+    #---------------------------------------------------------------------------
+	listHead(n, args) = args[1 : n]    
+	listTail(n, args) = args[n + 1 : end]
+	#---------------------------------------------------------------------------
+	n = fd.arity
+	f = fd.definition
+	g = gd.definition
+    #---------------------------------------------------------------------------
+	function theCombination(args...)
+        # f(listHead(n, args)...,) '...' in call = *splatting* ==> (:a, :b)
+		# g(listTail(m, args)...,) '...' in call = *splatting* ==> (:c, :d, :e)
+		#-----------------------------------------------------------------------
+		h(f(listHead(n, args)...,), g(listTail(n, args)...,)) #*splatting*
+	end # theCombination
+	theCombination
+end # spreadCombine5
+
+# ╔═╡ daa183aa-31fe-4ac6-9c31-962837182fe1
+hfg3 = spreadCombine6(vcat, fooWrapped, barWrapped) 
+
+# ╔═╡ c25f413b-7722-4a42-8b77-99f17dc23275
+ hfg3(:a, :b, :c, :d, :e)
+
+# ╔═╡ bc110512-b60f-4c9b-977c-5bf908b1f54e
+spreadCombine6(vcat, fooWrapped, barWrapped)(:a, :b, :c, :d, :e)
+
+# ╔═╡ 231aa94a-3bc9-480c-97dd-459b7b3d8671
+hfg4 = spreadCombine6(list, fooWrapped, barWrapped) 
+
+# ╔═╡ a6b4af10-678d-44e5-bca8-a753b0378f70
+hfg4(:a, :b, :c, :d, :e)
+
+# ╔═╡ 8bd6eea0-b261-4036-9612-465dee2ec79b
+spreadCombine6(list, fooWrapped, barWrapped)(:a, :b, :c, :d, :e)
+
+# ╔═╡ ac3879dd-b81e-4b3e-8b50-fcb296dcc558
+md"
+---
+##### A Small Library (SDFF, 2021 p.33f and Fig. 2.5)
+
+
+
+             +----------------------------------------------------------------+
+             |                                                                |
+             |            +-------------+            +------------+           |
+             |            |             |            |            |           |
+        i    |     xss    |  listRemove |     xs     |            |     y     |   y
+    -------->+  --------->+             +----------->+   f(xs)    +---------->+------>
+     arity 1 |  arity n+1 |   lr(xss)   |   arity n  |            |  arity 1  |   1
+             |            |             |            |            |           |  
+             |            +-------------+            +------------+           |
+             |                                                                |
+             +----------------------------------------------------------------+
+
+
+
+compare with Fig. 2.5 (SDFF, 2021, p.33)
+"
+
+# ╔═╡ c1e3f423-ebd1-4f18-bee6-6fa61b999b2c
+# remove the index-th element (in SDFF the (index+1)-th element is removed)
+function listRemove(index, lst)
+	if 1 <= index <= length(lst)
+		append(lst[1:index-1], lst[index+1:end])
+	else error("assumption '1<=index<=length(lst)' is violated, because index is: ", index, " and length(lst) is: ", length(lst))
+	end # if
+end
+
+# ╔═╡ 7c6323c5-6b47-44a0-a490-3485b1052b92
+xs
+
+# ╔═╡ c48800c6-ac5c-4eb7-9539-10f62456a965
+listRemove(1, xs)
+
+# ╔═╡ b1bc624f-1404-487e-a76e-571702dbf684
+listRemove(3, xs)
+
+# ╔═╡ 1611322f-6fc2-4607-86ed-a996c92db0be
+listRemove(5, xs)
+
+# ╔═╡ 9e501330-34b4-4b76-9a1b-f1fff963db56
+function discardArgument(i)
+	#---------------------------------------------------------------------------------
+	assert(condition, normText, irritant1, irritant2) = 
+		if condition == false
+			error("assertion $normText is violated, because $irritant1 <> $irritant2")
+		else
+			true
+		end # if
+	#---------------------------------------------------------------------------------
+	getArity(proc) = inArities[proc]
+	#---------------------------------------------------------------------------------
+	isExactNonNegativeInteger(i) = isinteger(i) && (0 <= i)
+	#---------------------------------------------------------------------------------
+	function restrictArity(theCombination, outArity)
+		outArities[theCombination] = outArity   # decl. of out-arity of combination
+		theCombination                          # return theCombination
+	end
+	#---------------------------------------------------------------------------------
+	function (f)
+		n = getArity(f)
+		function theCombination(args)
+			assert(length(args) == (n+1) || length(args) == 1, "length(args) == (n+1) || length(args) == 1", length(args), (n+1, 1))
+			f(listRemove(i, args)...,)
+		end
+		assert(i <=n+1, "i <= n+1", i, n+1)
+		restrictArity(theCombination, n)
+	end
+	#---------------------------------------------------------------------------------
+end
+
+# ╔═╡ c9f18e48-4744-4cbf-a215-3216404f6872
+xyz = (x, y, z) -> list(:foo, x, y, z)
+
+# ╔═╡ 990bcb0e-5919-45b8-b96c-ccbfa2ee189f
+inArities[xyz] = 3
+
+# ╔═╡ 1291ad43-aecf-44f9-9d3e-3b7bc8c57f79
+xyz(:a, :b, :c)
+
+# ╔═╡ ed6028f2-9926-4428-bdef-c417e220e4ea
+listRemove(5, xs)
+
+# ╔═╡ 85291cf0-dccb-4e0d-a173-a08f5700cb9a
+dA2 = discardArgument(3)(xyz)
+
+# ╔═╡ 17f0eb92-749e-40c1-b68d-c563b988620f
+dA2(listRemove(5, xs))
+
+# ╔═╡ 071ba8bf-58a3-4be4-89c2-77e7e4148287
+discardArgument(3)(xyz)(listRemove(5, xs))      # SDFF, 2021, p.34
+
+# ╔═╡ 3b151e56-9fb1-4307-9ff0-8dde0f43b768
+discardArgument(3)(xyz)(list(:a, :b, :c, :d))   # SDFF, 2021, p.34 
+
+# ╔═╡ 34819d54-210b-4518-a9d2-c53322cf17b0
+discardArgument(3)(xyz)((:a, :b, :c, :d))       # SDFF, 2021, p.34 
+
+# ╔═╡ c98d85ac-e51e-448f-b66d-0e888fe22228
+foo3(args...) = list(:foo3, args...)
+
+# ╔═╡ 1613332b-ce0d-48b9-a814-f1a4bb0559c2
+foo3(xs)
+
+# ╔═╡ 40842d97-1146-4241-b0dc-0e9bc86050b0
+foo3(xs...)
+
+# ╔═╡ 0d8136f3-2d80-4c6f-979b-426f0e137ca8
+inArities[foo3] = 4
+
+# ╔═╡ bf0276f3-2f9e-480c-b25d-5cc1bb81142e
+inArities[foo3]
+
+# ╔═╡ 60d993be-c111-42e2-8e17-1b9081681799
+discardArgument(3)
+
+# ╔═╡ 45f0bfd6-649d-48d2-a8d0-d7088c810a48
+discardArgument(3)(foo3)
+
+# ╔═╡ 52e18abc-465d-4956-8937-055f157a65e7
+dA3 = discardArgument(3)(foo3)
+
+# ╔═╡ aa30e6e9-c07a-4be3-937b-2f43f2f570b9
+dA3(xs)                         # SDFF, 2021, p.34
+
+# ╔═╡ fdc6369c-e5a7-4293-804b-a2365437877e
+discardArgument(1)(foo3)(xs) 
+
+# ╔═╡ 1d37be8f-825a-4442-aa24-810ebce53599
+discardArgument(2)(foo3)(xs)    # SDFF, 2021, p.34
+
+# ╔═╡ 382b3e7e-1eaa-460c-bef8-a6de6719f8e0
+discardArgument(5)(foo3)(xs) 
+
+# ╔═╡ 3b7ee235-a037-4976-a95b-5645639aeedd
+md"
+---
+
+             +----------------------------------------------------------------+
+             |                                                                |
+             |            +-------------+            +------------+           |
+             |            |             |            |            |           |
+        i    |     xss    | listInsert  |     xs     |            |     y     |   y
+    -------->+  --------->+             +----------->+   f(xs)    +---------->+------>
+     arity 1 |    arity n |   lr(xss)   | arity n+1  |            |  arity 1  |   1
+             |            |             |            |            |           |  
+             |            +-------------+            +------------+           |
+             |                                                                |
+             +----------------------------------------------------------------+
+
+
+
+compare with Fig. 2.6 (SDFF, 2021, p.34)
+"
+
+# ╔═╡ c98bc581-d9ec-4f38-9223-04674a9451db
+function listInsert(index, value, lst)
+	append(append(lst[1:index-1], list(value)), lst[index:end])
+end
+
+# ╔═╡ 927c74ee-1093-428c-beb5-e6405821d15d
+listInsert(3, :z, xs)
+
+# ╔═╡ f46d29c7-f6f2-4ebf-b079-e56845095e7b
+# xyzw = (x, y, z, w) -> list(:foo, x, y, z, w)
+xyzw = args -> list(:foo, args...)
+
+# ╔═╡ 9e1ac93a-b699-446d-be55-afd08a3a44af
+inArities[xyzw] = 4
+
+# ╔═╡ 77906c5f-b47c-49f1-bd9c-2ae13c34b435
+inArities[xyzw]
+
+# ╔═╡ 824894fe-0444-4d91-adf4-20b136c49e3e
+xyzw(listRemove(5, xs))
+
+# ╔═╡ ba2375f3-1cc3-4c19-bad1-bdc8945243bc
+function curryArgument(i)
+	#---------------------------------------------------------------------------------
+	getArity(proc) = inArities[proc]
+	#---------------------------------------------------------------------------------
+	assert(condition, normText, irritant1, irritant2) = 
+		if condition == false
+			error("assertion $normText is violated, because $irritant1 <> $irritant2")
+		else
+			true
+		end # if
+	#---------------------------------------------------------------------------------
+	function (args)
+		function (f)
+			assert(length(args)==getArity(f)-1, " length(args)==getArity(f)-1 ", length(args), getArity(f) - 1) 
+			function (x)
+				f(listInsert(i, x, args))
+			end
+		end
+	end
+end
+
+# ╔═╡ 7788f41a-fbfa-4c56-9917-d8618b5c1fdf
+curryArgument(3)(listRemove(4,listRemove(5, xs)))(xyzw)(:d)    # SDFF, 2021, p.35
+
+# ╔═╡ 86f8c64e-8433-4000-81e6-97a00608ba81
+md"
+---
+
+             +---------------------------------------------------------------+
+             |                                                               |
+             |            +-------------+           +------------+           |
+             |            |             |           |            |           |
+    permspec |     xss    | thePermuter |    xs     |            |     y     |   y
+    -------->+  --------->+             +---------->+   f(xs)    +---------->+------>
+     arity n |   arity n  |   tP(xss)   |  arity n  |            |  arity n  |   n
+             |            |             |           |            |           |  
+             |            +-------------+           +------------+           |
+             |                                                               |
+             +---------------------------------------------------------------+
+
+
+
+compare with Fig. 2.7 (SDFF, 2021, p.35)
+"
+
+# ╔═╡ ede1959b-f75d-4d11-98db-a70c301e82e9
+function makePermutation(permspec)
+	#-----------------------------------------------
+	listRef(lst, p) = lst[p]
+	#-----------------------------------------------
+	function thePermuter(lst)
+		map(p -> listRef(lst, p), permspec)
+	end
+	thePermuter
+end
+
+# ╔═╡ 2180662e-9239-4885-80e5-7a8a8811c6a9
+permSpec = list(2, 3, 1, 4)
+
+# ╔═╡ beb85dbd-c222-481c-bc47-c0d1486273f9
+listRemove(5, xs)
+
+# ╔═╡ 6e4e0c17-611b-4a4c-acaf-6dbeb94e52fd
+makePermutation(permSpec)(listRemove(5, xs))
+
+# ╔═╡ b478c659-11af-435d-9b0e-72621d4a51df
+inArities[xyzw]
+
+# ╔═╡ 8831a89e-7ed2-41d5-8ba5-137c530dcdaa
+function permuteArguments(permspec)
+	#---------------------------------------------------------------------------------
+	getArity(proc) = inArities[proc]
+	#---------------------------------------------------------------------------------
+	function restrictArity(theCombination, outArity)
+		outArities[theCombination] = outArity   # decl. of out-arity of combination
+		theCombination                          # return theCombination
+	end
+	#---------------------------------------------------------------------------------
+	assert(condition, normText, irritant1, irritant2) = 
+		if condition == false
+			error("assertion $normText is violated, because $irritant1 <> $irritant2")
+		else
+			true
+		end # if
+	#---------------------------------------------------------------------------------
+	let permute = makePermutation(permspec)
+		function (f)
+			function theCombination(args)
+				f(permute(args))
+			end
+			let n = getArity(f)
+				assert(length(permspec) == n, " length(permspec) == n ", length(permspec), n)
+				restrictArity(theCombination, n)
+			end # let
+		end
+	end # let
+end
+
+# ╔═╡ 1630ec40-fef5-4de7-a63b-7fac1542d0f1
+permuteArguments(permSpec)(xyzw)(listRemove(5, xs)) # SDFF, 2021, p.36
+
+# ╔═╡ 15055c1b-5e00-49f9-b7e8-378a26ebfbd2
+md"
+---
+#### 2.1.1.2 *idiomatic* Pluto/Julia code
+"
+
+# ╔═╡ 78ad9d14-bbcc-44c0-9279-fbe8e4dd5399
+md"
+##### Composition (SDFF, 2021, p.23f, Fig. 2.1)
+$$(f \circ g)(xs) := f(g(xs))$$
+$$g: xs \mapsto y, f: y \mapsto z$$
+"
+
+# ╔═╡ c300bbbd-55ba-40be-a396-1c2351e31bfa
+md"
+###### Julia's built-in [composition operator](https://docs.julialang.org/en/v1/manual/functions/#Function-composition-and-piping) $$(f \circ g)(xs) := f(g(xs))$$
+"
+
+# ╔═╡ b027ac6d-e0e1-4ad5-93de-773792db6b1d
+md"
+###### *direct* composition of *anonymous* functions
+"
+
+# ╔═╡ 2ff38ddf-2048-4298-9fcc-b326ff1ea18a
+((y -> (:foo, y)) ∘ (xs...) -> (:bar, xs...))()  
+
+# ╔═╡ 14835de5-b83c-4fb8-92df-89fca1a57175
+((y -> (:foo, y)) ∘ (xs...) -> (:bar, xs...))(xs)      # unsplatted
+
+# ╔═╡ ca1adf8e-a5c7-4766-b93a-9ee1b9e8963f
+((y -> (:foo, y)) ∘ (xs...) -> (:bar, xs...))(xs...)   # splatted
+
+# ╔═╡ d1e4bd64-6ea8-47ed-a2b6-ac8ea7b7baaf
+md"
+######  *indirect* composition of predefined functions *f* and *g*
+"
+
+# ╔═╡ 48ff9bd8-eb14-4474-b350-7f080dac4952
+(f ∘ g)()
+
+# ╔═╡ 49e63bd8-f036-4e29-a8a7-cb70c4c427f6
+(f ∘ g)(:z)                        # SDFF, 2021, p.24
+
+# ╔═╡ cdbbc27a-a0e1-4698-96d0-5a71c6c5ecfb
+(f ∘ g)(xs)                        # *nonsplatted*
+
+# ╔═╡ a8486a6c-87d1-456f-8170-eb6889edacd1
+(f ∘ g)(xs...)                     # *splatted*
+
+# ╔═╡ c9c1b5b6-bb89-4b51-8cbd-6c35243d7778
+md"
+##### Piping
+"
+
+# ╔═╡ 07a35c3a-d0cb-41f0-989f-c4cd44d804a5
+() |> g |> f
+
+# ╔═╡ b974e4d7-8066-4c14-aeab-fcdc621164d0
+xs |> g |> f                       # *nonsplatted*
+
+# ╔═╡ b7302bf5-4512-4a8c-88ad-905b42b9bba1
+(xs...,) |> g |> f                 # *nonsplatted* (!) though *splatted* arguments !
+
+# ╔═╡ 7ec3bbef-42ad-4bb0-ad27-9f935b2534b2
+md"
+---
+##### Iteration of Composition (SDFF, p.25) 
+$$f^n(x) := (f \circ f^{n-1})(x) := f(f^{n-1}(x))$$
+$$f: x \mapsto y$$
+"
+
+# ╔═╡ 78d00d6a-a73e-4aea-a743-977b1252801b
+md"
+###### *3rd* solution approach: *composition* of functions $$(f \circ g)(x)$$
+"
+
+# ╔═╡ 6d8ee452-b623-4b4a-bb9c-ac77e2aa2188
+function iterate4(n)
+	function (f)
+		function (x)
+			if n == 0
+				identity(x)
+			else
+				(f ∘ iterate4(n-1)(f))(x)
+			end # if
+		end # anonymous with arg (x)
+	end # anonymous with arg (f)
+end # iterate4
+
+# ╔═╡ de8fb070-b954-4b86-b27b-1b0bd228cca0
+md"
+###### $$\mathbf{((5^2)^2)^2 = 390625}$$
+"
+
+# ╔═╡ 2a5af520-d633-4d60-a3d0-1c458577cbe1
+iterate4(3)(square)(5)
+
+# ╔═╡ 57c20cb7-e837-4816-9704-9bafacc6ab12
+md"
+---
+##### References
+
+- Hanson, Ch. & Sussman, G.J.; Software Design For Flexibility, Cambridge, Mass.: MIT Press, 2021
+- [MIT/GNU-Scheme](https://www.gnu.org/software/mit-scheme/); last visit 2022/04/25
+"
+
+# ╔═╡ 6bc8ead0-0a22-4378-861f-80f1248e844f
+md"
+====================================================================================
+
+This is a **draft** under the Attribution-NonCommercial-ShareAlike 4.0 International **(CC BY-NC-SA 4.0)** license. Comments, improvement and issue reports are welcome: **claus.moebus(@)uol.de**
+
+===================================================================================
+"
+
+# ╔═╡ 00000000-0000-0000-0000-000000000001
+PLUTO_PROJECT_TOML_CONTENTS = """
+[deps]
+"""
+
+# ╔═╡ 00000000-0000-0000-0000-000000000002
+PLUTO_MANIFEST_TOML_CONTENTS = """
+# This file is machine-generated - editing it directly is not advised
+
+julia_version = "1.10.5"
+manifest_format = "2.0"
+project_hash = "da39a3ee5e6b4b0d3255bfef95601890afd80709"
+
+[deps]
+"""
+
+# ╔═╡ Cell order:
+# ╟─ed574084-878a-4864-9691-54ba63f05b5e
+# ╟─320c34d6-499a-443c-b964-caa0f61b3347
+# ╟─0ec25c89-5928-43a1-a279-4dac363c8349
+# ╠═f919d203-f6e8-48e4-a7c4-5c2f58bc3229
+# ╠═a16c0157-cb4b-4e3e-b0bb-3baf0e491ec1
+# ╟─2b8ece92-d292-4976-b95c-7831bcabc3b9
+# ╠═6dc1a242-d077-4929-b235-3b62c9e32ade
+# ╠═b2cd3150-2cb5-4af2-9324-eb3f767577b9
+# ╟─76cc41e9-f5e8-4471-974d-49029c7f2a47
+# ╠═1b5df1e2-10a8-45ed-a99a-72685e686a65
+# ╟─5367b9fb-36cb-48a2-b0bb-185773def811
+# ╟─26accf19-ff3c-4c38-ad56-23b4499e3c1c
+# ╠═d116ae0a-2a7e-4135-9eb1-6a164a7fee86
+# ╠═08a016a9-bd5d-4ab5-9277-090d7a1f8fac
+# ╠═08403ff9-86df-420f-8053-c559022cd5c0
+# ╠═87868edf-44a9-459d-a41e-eaa148ba1f3d
+# ╟─56693ef7-ed0e-483b-8b75-60b228413707
+# ╟─4455d006-5392-4a92-be9b-5c0c80dde056
+# ╟─5a147951-8cd2-43c1-95e8-f44abd06e4c9
+# ╠═0bc6ac77-6241-45d1-9fb3-dde3ad713c02
+# ╠═25fbb2d2-8903-41ae-b406-73f1e97fad2c
+# ╠═1703dc91-be3f-4a27-9673-181f6b24e73f
+# ╠═c16b89ba-1066-4d6b-9ff8-fabe5af98ea6
+# ╠═022c4d69-35ca-46df-85df-35af9c92767b
+# ╠═6e71fdea-ebdc-4483-984b-2bf2e6092273
+# ╠═2deb8781-1bdb-464a-918d-aa62bbe1ed5a
+# ╟─0c89714b-b5c7-42d8-8c35-9db99c7c1925
+# ╠═bc3dc391-bdd5-4b5e-b7a7-1877d42b1b95
+# ╠═285f4ca5-d2d6-407f-a12d-ff2b99744a61
+# ╠═ccc6e264-5627-40a2-aab1-8e9bd026c62e
+# ╠═aa0c1447-b181-4c6d-bf41-15fc85384b2d
+# ╠═9243c110-b7aa-4260-a587-30c8714c7224
+# ╠═5df23c82-d519-4f23-843c-ecf2e4ea5bdf
+# ╠═a1121e23-15ff-4941-ac8d-8b5e9a255103
+# ╠═bb3af9ea-467e-4642-83a4-3cabf258f208
+# ╠═d942a0c3-b59b-4876-a415-9dff8cf77042
+# ╠═575be219-84f1-4868-a045-c84423f5ada3
+# ╟─178464b2-1742-47c1-965e-559c4e926fa4
+# ╠═85d36e60-c30d-11ec-1048-6318b58de85f
+# ╟─d0b5ead3-2f78-476d-b3a9-62b852469393
+# ╠═75fa6414-babe-4494-8b04-c89671614c8e
+# ╠═3f697dd8-a081-450b-b669-c41705b5026f
+# ╠═1e61f65e-9ba6-4042-b53c-fb6575583a70
+# ╠═7a2c9f1e-c4ba-4058-9a8e-8802be833c01
+# ╠═e96e10ff-1476-40c1-995b-3bba2f13f52e
+# ╟─35177b4d-6317-4054-a570-9c63cb96fece
+# ╠═ea896922-948a-450e-8d29-10bf6dea760c
+# ╠═546b08ee-2278-403e-83f4-78a779890b47
+# ╠═b51ac249-dc7a-41d1-9882-d9bd20eedcec
+# ╠═848defbd-6183-44b3-a273-378b965837da
+# ╠═710b9351-299e-41d6-b01f-6688bd917916
+# ╠═5635f7c9-310b-418b-8cef-57e9a3a8a95a
+# ╠═87a86ebd-9c2c-4cd6-b342-55fbfcdf6968
+# ╠═ceb722fa-5729-4b4d-90cb-27bdb8d27ba0
+# ╟─1bb979ee-83f0-4c3e-a4a5-cf166319ad06
+# ╠═96162574-72c9-403f-85a4-c83ff516c726
+# ╠═1efbdc56-0dd4-45ad-8fcd-7eb62c9c1c53
+# ╠═6a36d310-9aff-46df-a91e-d166efdaf55d
+# ╠═4abf8182-d3d4-4efc-b19f-81be158b2fa1
+# ╠═b5328776-9f36-48b0-a090-2e4a78aa2c4d
+# ╠═d2f0231e-cc65-40db-8643-6920b084c1d2
+# ╠═eae42ecb-b63d-4e21-a50b-997336108fe2
+# ╠═251f19d1-d9a3-4396-8491-9676ac46d5fd
+# ╟─def38b89-cb91-4f01-9785-84af6d355083
+# ╠═45fa3167-2ff6-4022-b532-551f015e358e
+# ╠═225964ee-9852-4464-8348-d482a60dc71a
+# ╠═39749a94-50d9-46b4-8c7c-18ff5b52e37b
+# ╟─e670ee04-118c-4717-b580-6ea30d319bd6
+# ╠═7c471fa5-8314-46ba-a43c-3e4c9324746e
+# ╟─62291513-d98f-482d-b624-1dd01699ca0c
+# ╠═284dddd8-de11-4c63-a808-05da6d260b78
+# ╟─cab65ed5-6ad2-4298-a5bb-66f01799d45a
+# ╠═d30308aa-75d8-488e-87c7-d363014cf05c
+# ╟─f7231bd2-c4c1-4941-a71d-d31f7081012e
+# ╠═c9372745-3941-4dae-8ee9-9751121e76b5
+# ╠═355b93d4-8fdb-4cfd-b9b0-ea754303d9b5
+# ╟─4a052968-9283-4dbb-925d-13f28dc50ca6
+# ╠═d7465e52-e343-40b3-8bca-cfe24cb59566
+# ╟─397c2c73-f34e-4371-932a-b9efd7575c1d
+# ╟─240be2eb-8b3a-4f3d-924e-7488eef08dce
+# ╟─fe589b10-9317-4bbc-8b29-dea1e39613ab
+# ╟─b62af5a4-01bc-42fb-aa60-e4041dc23427
+# ╠═4442c724-96e4-4e9b-b311-874aee5207ab
+# ╠═852ece90-a319-4837-a6d1-ef55b6c2cbb6
+# ╠═196de54c-4b2c-4406-b353-9ce2d9e076a8
+# ╠═94558793-fd2e-4682-a37b-a68e65461227
+# ╠═ead6d9ed-0908-4b0c-8cbe-7ed8783b8b9b
+# ╠═0e634e0d-f99c-4af4-99eb-b5bad9732736
+# ╠═e50a5c98-3ce1-4d2f-bb6e-e86d61bf0a95
+# ╟─c025b618-baa5-4e84-a8a9-e23d124a5b4f
+# ╟─ebcca7cd-3b2b-427e-abd6-8ef3331a3273
+# ╟─5bae7c97-bc1a-4295-ac76-9d6bb6d386ba
+# ╟─9f44ed13-cace-4068-a3bf-d1f0efd1c74e
+# ╠═a0a90eaa-dbfc-4bb1-ab25-febc46fc27bb
+# ╠═8a8abc31-aef5-47cd-9c83-5ac11e2e2eb0
+# ╠═9bd2c559-2295-49ff-89f4-129136684364
+# ╠═29a405dd-5799-4d94-90c0-81f588b73a98
+# ╠═b3dd4198-d0a8-4a50-97e7-07376aecfed6
+# ╠═09812198-2090-4ebe-87eb-1c09cd3292f4
+# ╠═28622ba5-69c2-47c2-b878-923055522e47
+# ╠═7a0c2ef2-ca19-45ff-bdfb-ce1b8ce8a76e
+# ╟─ea799dd6-190b-496a-ac9f-98b0ddf0599b
+# ╠═b367928b-e0d0-4eaa-8f61-ee4a8c6e4a34
+# ╠═8f8d0d07-e0dc-4ee8-802e-bb162873ed06
+# ╠═7abb2330-12d4-4f96-8bcd-ba4df61a36e9
+# ╠═1c358203-d666-477d-8d26-2c7aa9ff830f
+# ╠═77a8fe92-2fa9-4f35-924d-fa5225601ff1
+# ╠═79db3e2d-2997-4aff-9466-56c761375ab9
+# ╠═9ea14528-dc8a-4755-8a26-16418af510d8
+# ╠═6c98d274-9888-4b12-a73f-c4f9d6b9c7cf
+# ╠═189d0658-16e4-4b24-9a5a-cef2cb68359d
+# ╠═93092361-36e9-4c52-a5b9-428ba79c8940
+# ╠═5869758c-af67-4051-b2b4-bda856aa7bdb
+# ╠═4ecea013-a927-470a-9107-620138dfb9da
+# ╠═a768a07f-5c81-42df-bf1b-2a4b74d0c42c
+# ╠═5c33b846-3c47-4700-967c-d5a53b6f01c9
+# ╠═08e37df4-24b3-49bb-bfe6-4407edfd9223
+# ╠═e3c8270e-a2a8-4a8a-8144-1250f1aa3269
+# ╠═4c3c1f47-d04c-4a38-a5ff-64ea6a7b1818
+# ╟─f4149c79-1f14-4071-b122-fbecfd8cc345
+# ╠═71fbd4b7-f286-40ad-9712-2c244fd2ae02
+# ╟─c9afabf3-408e-48ee-84c8-c5f6499e00c0
+# ╠═e306c82c-cb68-49f4-a43d-624a4645b90f
+# ╠═696a68c8-a1ab-4eec-a00e-cc2e7b09e3eb
+# ╠═fb38226f-497c-4838-a787-e44894ce4531
+# ╠═3b4911c4-d644-45cc-af9b-74a96f41ba1b
+# ╠═3e43ee94-d528-4112-95af-6ca6450c5735
+# ╠═026642cb-3c82-4bb8-9e4a-2b874bde5832
+# ╟─8dcf1970-1fd9-4bb1-8423-9e7dd4c6b227
+# ╠═87401239-d818-433b-b59d-81e06f55161c
+# ╠═5aa64a4f-550a-43b5-a4a6-319bd91a6cc1
+# ╠═dd10da38-411f-4073-9883-fbccd40b3f27
+# ╠═dbefbad8-0f0e-44f5-871a-c782079e3c7a
+# ╠═ee7b60ff-f204-4efb-b23f-b79fbc94a64a
+# ╠═529eba47-9b24-43c3-b3a7-3377f32cadfc
+# ╟─16e923bb-5162-41b0-ae69-f21f84bfa1c3
+# ╟─c6260789-515c-4eea-a321-000e2f63f708
+# ╠═74d759c2-9558-42f5-9723-396f2d87ab7c
+# ╠═b424345d-b1cf-44e6-9002-f87d22d6f948
+# ╠═04cd1a4b-4d58-48f6-a53e-e92deccf1cb4
+# ╠═0ded6131-cb55-498d-a485-6873d28754b3
+# ╠═7fbda4e4-3590-43f4-8dec-f68931c7cdcf
+# ╠═24d9b5ad-0bc6-4f15-8db5-295c81130b29
+# ╠═74f6f44f-c994-45fa-af3a-29ec734f92db
+# ╠═590759d6-faaf-4093-acb4-1eaaf558825e
+# ╠═ee70f606-7526-4be8-b736-b62cb3e61f7e
+# ╠═0f5365d8-2f1a-4e07-9b5c-336d5b034990
+# ╠═f06c5e35-948d-4007-b37f-13d220c63c0c
+# ╠═14aaa93a-c89b-4354-a9c0-89a83e398748
+# ╠═35d4e8f4-74f9-44e4-bfce-79d8bbe31343
+# ╟─8c42e3e4-e9c7-48e1-9d11-84f574a2b559
+# ╠═057050b6-8187-497e-a3a4-42e9f6b13673
+# ╠═d5da5b14-c041-4782-b64e-5016b77e7c9a
+# ╠═5df21f49-ba95-4c39-bb41-c2e4ed2bbe41
+# ╠═b8db0897-7dad-41f7-ba53-95db22614ec1
+# ╠═df2b9032-015d-4dd8-9198-1e4396b8fb57
+# ╠═86dbc6b3-ca68-4858-90a0-5169d94ddf71
+# ╠═b8d82075-186d-4f4f-84e2-0d5a1a4fbe52
+# ╠═2186ead9-7a02-4367-8ccf-0d7a25bbcb5c
+# ╠═aad8770a-f4a7-4f09-bd68-ad037ff993be
+# ╠═40b59737-aac4-4cf4-ab44-63f6fd943b35
+# ╠═6ff3af02-767b-4eb6-b5f5-1fee20d7834a
+# ╠═4463844f-b0bc-4b7d-97c9-2c0b6750a642
+# ╠═af4585de-ee9b-4fdc-9511-e7044ad880fc
+# ╟─3df5c4c3-1eb1-4cea-9dda-38ec94aed337
+# ╟─71e04bde-b23b-43e5-a8e1-7853d36ca448
+# ╟─8f3bfae3-041c-471e-b2b1-04c50b72a448
+# ╠═d4970dc9-2b9f-4cdf-81bc-f31f27ad790e
+# ╠═12d6e526-72ad-40cb-865f-9d522116e145
+# ╠═38d5a209-76d3-4f4c-bc1c-e62f0e66d191
+# ╠═a6558d4e-0466-4535-a725-8d9fff72d6af
+# ╟─4c4ad8b4-802a-4b05-bffa-2d9506c2846d
+# ╠═86f655e4-0f4a-40e2-bd42-786efb0e2089
+# ╠═86ae6516-e504-45fb-96e4-1b235e20afb2
+# ╠═c815f05c-cf8d-4b13-b244-2253bf89ce65
+# ╠═7ad800a2-16f7-4271-9b5d-6f06ee987ac0
+# ╠═25eb7873-598d-44fe-aa59-e25def5b1996
+# ╠═1311fdd4-9656-4cc8-b606-e3df33984d90
+# ╠═30714f62-2032-49c8-a890-df27751c1612
+# ╠═9c1ed6c8-bc35-442e-9f85-39d401542c1d
+# ╠═7b7e8126-2004-4857-95b5-779c359d5673
+# ╠═dae4563a-b828-4d8f-a0c1-effc7582af1d
+# ╠═d34c4393-0c9a-4510-977c-bb4c077bd8b8
+# ╠═b26bc93f-017e-4324-a9f0-b4f2017363f4
+# ╠═2c2eb8ef-f216-4383-bb47-894ec603c677
+# ╠═126e48af-36b7-4190-b3df-372105fcd153
+# ╠═a3ff3a02-8b8c-4a5b-a72d-9a88366f0480
+# ╠═0e70b3e0-b51a-457d-8590-278b14af3972
+# ╠═13d73103-2513-4239-8cd5-de8e047fd494
+# ╠═22268f5e-ea3c-419d-b7b4-bc0ca15a4966
+# ╠═d34e8950-0bb7-4440-99f9-5e16930352b9
+# ╠═b5fc5198-64a7-44e9-aeed-b6a6551117ec
+# ╠═666ca27e-ff82-45cb-bb4c-66904a275841
+# ╠═3f7676d2-97aa-4d1c-a3de-af7227a1f287
+# ╠═5283b7c9-f073-4be4-a4b9-cccf9024f3b3
+# ╠═5674d593-d9af-4bf4-b128-d04a99eff721
+# ╠═a91cf4a8-41ab-41ee-83ee-c93ef598754b
+# ╠═3d296ea8-f621-4dd3-8306-df9ec006bd9c
+# ╠═0bcea886-47da-4294-9c3b-f4bec614ade8
+# ╠═066d0139-60f2-43b8-a9e2-a41c0941d691
+# ╟─47b1a328-e100-4969-82bc-5cd08106f1b5
+# ╠═72717c80-3b65-4ddf-a84c-8814eacab044
+# ╟─94b6be3c-f93e-4430-8308-a047a0bec842
+# ╠═49bb3933-5eaa-4e53-9a64-c7d9ab956f25
+# ╟─0dc910b1-8b98-4f54-baf2-ddad514e85e5
+# ╠═5a7cf7d7-4a5a-4dfa-a39e-75e9a422fc05
+# ╠═256718c8-bb53-46f7-ba2b-bc28b8ecb9a4
+# ╠═f9bca9e6-04ad-4698-90f2-7f0b8207484e
+# ╠═05c12e31-9ce6-4392-975b-1ebd30688930
+# ╠═c92af4fe-832c-47d5-ac32-555b081ec0ea
+# ╠═e5646279-efb2-430b-a312-a99b7448c270
+# ╠═1e10a051-c220-46d2-b26f-e2325bf73aec
+# ╠═96226920-366b-400f-91b8-bb0efa82037a
+# ╠═fc0de10b-dce8-4850-98a9-3058a9e7abdb
+# ╠═b8cc8b80-646d-4a0d-9b71-6838f39aa03f
+# ╠═a0912292-076e-4df2-942e-cb4b9e53a584
+# ╠═4b545f6a-d825-4e16-8c0e-223e35173166
+# ╠═a5301b93-d71f-431e-9fa6-8b1f5e008b29
+# ╠═d310fa43-84d2-4e83-ba5b-11b3362af763
+# ╠═c4e7885c-300d-47a6-8485-b7abda96082e
+# ╠═27a03445-0c4a-4b0b-87d2-b44188008d3c
+# ╠═cf270a21-8138-474d-bf08-fdb379fe552c
+# ╠═044cc0e7-f8a5-4e70-ad4b-6a41c07ba42b
+# ╠═96f0288c-163d-4e13-bce7-5fc0c4a08162
+# ╠═922ca631-2d54-4d1b-8d40-4031894a5480
+# ╟─8b83411b-ed6a-436e-9b3e-1fd324cb6876
+# ╠═173e1abc-4591-4197-b12a-ccc85b496c29
+# ╠═52c1c548-6916-4f9e-b854-02abca7eedda
+# ╠═537d98fb-5f15-4983-beca-0fe3b77c41da
+# ╠═906a226f-ee54-415f-b53d-7afd80befdc5
+# ╠═d2db5133-349e-4c5c-845c-6635b3c4cdca
+# ╠═682180c3-c1c3-404b-a480-8e10e8fb7a7f
+# ╠═b714d385-b2a6-4a37-a5a8-fac352e428ef
+# ╠═309e0b1c-96f7-41bf-94d6-fe5612903f98
+# ╠═f5c4d7e5-2acb-47b0-b986-f6baa796987b
+# ╠═e3860454-623a-4616-a1fc-9fb520603caf
+# ╠═a089cdf7-52a0-4028-84aa-c34a97b926c6
+# ╠═7039cb60-7f75-4c04-9c44-cfd8d4dd8a8c
+# ╠═d8f74bed-818b-4c95-986d-730cb9cae3d9
+# ╠═b47aef90-94af-405d-acec-10b827a776e6
+# ╠═bfc85c03-444d-4eaa-8a7e-d7bc0d560cd7
+# ╠═565b0d24-7dc1-4fbd-99da-c9616db5f47b
+# ╠═5f169cac-c07d-48a2-ba8c-ef2ab40f8456
+# ╠═afc22020-592e-4f19-9c7d-4fd391bc041e
+# ╠═74240764-37c4-4fe5-9583-25f5d3eef038
+# ╠═69400d19-c07a-469a-8a95-2d13f6903a72
+# ╠═5d7fd2b3-a842-4925-b0e8-5a2da86726b9
+# ╠═0e4b84a6-a4ff-4625-9f26-e33aa489daf1
+# ╠═33b0df58-6241-4a00-b636-43014bfd3177
+# ╠═46a21d48-3561-43b0-9795-e4e90451d8a2
+# ╠═da52144d-358b-40a8-a1f7-e09150d56cf3
+# ╠═d0a963bd-df95-4f2c-af58-031687549794
+# ╠═210f0ef6-f173-43d4-983d-7ce79486d7cc
+# ╠═4778ed85-f586-4c69-9f18-bc685a9cda80
+# ╠═1cb9819b-e0bb-4554-8000-c439f1bec154
+# ╠═b3266a7d-134e-4533-922b-61822a41611d
+# ╠═feea6c0f-0aab-41c1-b94a-0b081e6cc6a6
+# ╠═2657369e-7462-42b9-befe-cd684fae5cd0
+# ╠═c7a0333f-9aa7-48ec-8baa-e87bf7c8f091
+# ╠═2b6b7c90-3a74-41dd-9ac7-10b6c4e90c29
+# ╠═88e22b65-424c-4daf-9b1a-a6ccdb064c3e
+# ╠═3d9b45af-7993-459d-b38f-bbcc191058a4
+# ╠═71645559-af66-4010-af11-d6fca526c256
+# ╠═e8c94d3a-1507-4378-a5cc-03d4a2616c4c
+# ╠═21906bd9-c185-44e2-b7e1-0b6112631710
+# ╠═66e1dabb-59dc-4171-901e-b8431d445ce4
+# ╠═b83c8bd2-266c-4c84-9f2a-8bf124fa9780
+# ╠═f51f9f68-fa41-4330-a8ea-1c618268892d
+# ╟─43e94134-5d4d-48b3-8bff-420989096f06
+# ╠═7313798b-65be-4b48-8fde-d1a96a5d83a2
+# ╠═50d98fb9-1e4e-4b95-b03d-5d61105b707c
+# ╠═813c789a-a429-45bd-866d-ad7ad6efa914
+# ╠═9983badd-81bb-4063-95fd-f0a18beccad8
+# ╠═a3146af8-71fc-4b75-aaa5-02d4e8c8e987
+# ╠═f58da82f-3c24-4c9c-8f02-b6232e5a6ae5
+# ╟─474e8557-05d8-448c-84e5-bba1d4a52ef1
+# ╟─c4e40059-428e-4c35-8287-3cc6e26e93ab
+# ╟─2b4a70fb-a683-4d8d-94f8-a6b655f92882
+# ╠═9dac659c-5d8b-4f37-acb6-f4e7ae33e785
+# ╠═daa183aa-31fe-4ac6-9c31-962837182fe1
+# ╠═c25f413b-7722-4a42-8b77-99f17dc23275
+# ╠═bc110512-b60f-4c9b-977c-5bf908b1f54e
+# ╠═231aa94a-3bc9-480c-97dd-459b7b3d8671
+# ╠═a6b4af10-678d-44e5-bca8-a753b0378f70
+# ╠═8bd6eea0-b261-4036-9612-465dee2ec79b
+# ╟─ac3879dd-b81e-4b3e-8b50-fcb296dcc558
+# ╠═c1e3f423-ebd1-4f18-bee6-6fa61b999b2c
+# ╠═7c6323c5-6b47-44a0-a490-3485b1052b92
+# ╠═c48800c6-ac5c-4eb7-9539-10f62456a965
+# ╠═b1bc624f-1404-487e-a76e-571702dbf684
+# ╠═1611322f-6fc2-4607-86ed-a996c92db0be
+# ╠═9e501330-34b4-4b76-9a1b-f1fff963db56
+# ╠═c9f18e48-4744-4cbf-a215-3216404f6872
+# ╠═990bcb0e-5919-45b8-b96c-ccbfa2ee189f
+# ╠═1291ad43-aecf-44f9-9d3e-3b7bc8c57f79
+# ╠═ed6028f2-9926-4428-bdef-c417e220e4ea
+# ╠═85291cf0-dccb-4e0d-a173-a08f5700cb9a
+# ╠═17f0eb92-749e-40c1-b68d-c563b988620f
+# ╠═071ba8bf-58a3-4be4-89c2-77e7e4148287
+# ╠═3b151e56-9fb1-4307-9ff0-8dde0f43b768
+# ╠═34819d54-210b-4518-a9d2-c53322cf17b0
+# ╠═c98d85ac-e51e-448f-b66d-0e888fe22228
+# ╠═1613332b-ce0d-48b9-a814-f1a4bb0559c2
+# ╠═40842d97-1146-4241-b0dc-0e9bc86050b0
+# ╠═0d8136f3-2d80-4c6f-979b-426f0e137ca8
+# ╠═bf0276f3-2f9e-480c-b25d-5cc1bb81142e
+# ╠═60d993be-c111-42e2-8e17-1b9081681799
+# ╠═45f0bfd6-649d-48d2-a8d0-d7088c810a48
+# ╠═52e18abc-465d-4956-8937-055f157a65e7
+# ╠═aa30e6e9-c07a-4be3-937b-2f43f2f570b9
+# ╠═fdc6369c-e5a7-4293-804b-a2365437877e
+# ╠═1d37be8f-825a-4442-aa24-810ebce53599
+# ╠═382b3e7e-1eaa-460c-bef8-a6de6719f8e0
+# ╟─3b7ee235-a037-4976-a95b-5645639aeedd
+# ╠═c98bc581-d9ec-4f38-9223-04674a9451db
+# ╠═927c74ee-1093-428c-beb5-e6405821d15d
+# ╠═f46d29c7-f6f2-4ebf-b079-e56845095e7b
+# ╠═9e1ac93a-b699-446d-be55-afd08a3a44af
+# ╠═77906c5f-b47c-49f1-bd9c-2ae13c34b435
+# ╠═824894fe-0444-4d91-adf4-20b136c49e3e
+# ╠═ba2375f3-1cc3-4c19-bad1-bdc8945243bc
+# ╠═7788f41a-fbfa-4c56-9917-d8618b5c1fdf
+# ╟─86f8c64e-8433-4000-81e6-97a00608ba81
+# ╠═ede1959b-f75d-4d11-98db-a70c301e82e9
+# ╠═2180662e-9239-4885-80e5-7a8a8811c6a9
+# ╠═beb85dbd-c222-481c-bc47-c0d1486273f9
+# ╠═6e4e0c17-611b-4a4c-acaf-6dbeb94e52fd
+# ╠═b478c659-11af-435d-9b0e-72621d4a51df
+# ╠═8831a89e-7ed2-41d5-8ba5-137c530dcdaa
+# ╠═1630ec40-fef5-4de7-a63b-7fac1542d0f1
+# ╟─15055c1b-5e00-49f9-b7e8-378a26ebfbd2
+# ╟─78ad9d14-bbcc-44c0-9279-fbe8e4dd5399
+# ╟─c300bbbd-55ba-40be-a396-1c2351e31bfa
+# ╟─b027ac6d-e0e1-4ad5-93de-773792db6b1d
+# ╠═2ff38ddf-2048-4298-9fcc-b326ff1ea18a
+# ╠═14835de5-b83c-4fb8-92df-89fca1a57175
+# ╠═ca1adf8e-a5c7-4766-b93a-9ee1b9e8963f
+# ╟─d1e4bd64-6ea8-47ed-a2b6-ac8ea7b7baaf
+# ╠═48ff9bd8-eb14-4474-b350-7f080dac4952
+# ╠═49e63bd8-f036-4e29-a8a7-cb70c4c427f6
+# ╠═cdbbc27a-a0e1-4698-96d0-5a71c6c5ecfb
+# ╠═a8486a6c-87d1-456f-8170-eb6889edacd1
+# ╟─c9c1b5b6-bb89-4b51-8cbd-6c35243d7778
+# ╠═07a35c3a-d0cb-41f0-989f-c4cd44d804a5
+# ╠═b974e4d7-8066-4c14-aeab-fcdc621164d0
+# ╠═b7302bf5-4512-4a8c-88ad-905b42b9bba1
+# ╟─7ec3bbef-42ad-4bb0-ad27-9f935b2534b2
+# ╟─78d00d6a-a73e-4aea-a743-977b1252801b
+# ╠═6d8ee452-b623-4b4a-bb9c-ac77e2aa2188
+# ╟─de8fb070-b954-4b86-b27b-1b0bd228cca0
+# ╠═2a5af520-d633-4d60-a3d0-1c458577cbe1
+# ╟─57c20cb7-e837-4816-9704-9bafacc6ab12
+# ╟─6bc8ead0-0a22-4378-861f-80f1248e844f
+# ╟─00000000-0000-0000-0000-000000000001
+# ╟─00000000-0000-0000-0000-000000000002
