@@ -1,0 +1,1827 @@
+### A Pluto.jl notebook ###
+# v0.19.46
+
+using Markdown
+using InteractiveUtils
+
+# ╔═╡ a75bd7c0-e0d6-11ec-0851-91219ae8324d
+md"
+=====================================================================================
+### SDFF_20220702, SDFF, 2021, ch. 2.3, Wrappers
+##### file: PCM20220531_SDFF_2.3_Wrappers.jl
+##### Pluto/Julia-code by PCM   *** 2022/07/02 ***
+=====================================================================================
+
+"
+
+# ╔═╡ cc6d0f3a-307e-40bd-a59e-5dabd60673b3
+md"
+###### [*ideal* gas law](https://en.wikipedia.org/wiki/Ideal_gas_law) (SDFF, 2021, p.46) :
+
+$\;$
+
+$PV = nRT$
+
+$\;$
+
+###### *Volume* :
+
+$V = \frac{nRT}{P}$
+
+$\;$
+
+where:
+
+$\;$
+
+$P \text{ is the pressure; SI-unit is } pascal := nsm = \frac{newton}{m^2}$
+
+$\;$
+
+$V \text{ is the volume; SI-unit is } cubicmetre := m^3$
+
+$\;$
+
+$n \text{ is the amount of the gas; SI-unit is } mole$
+
+$\;$
+
+$R \text{ is the ideal gas constant; in SI-Units is } 8.31446261815324$
+
+$\;$
+
+$T \text{ is the temperature; SI-unit is } kelvin.$
+
+$\;$
+
+"
+
+# ╔═╡ 04d5b061-baa6-48f7-9efd-d6159814275a
+gasConstant = 8.31446261815324                                    # J/(K * mol)    
+
+# ╔═╡ 158439ef-714e-41e1-b4b2-2efb916ca620
+# gasLawVolume: Pascal X Kelvin  X Mole --> Meter^3  ;;  SI-units 
+# NSM (= Newton Square Meter = SI-PASCAL)
+# gasLawVolume: PSI X Fahrenheit X Mole --> Inch^3   ;;  Anglo-Saxon-units 
+function gasLawVolume(pressure, temperature, amount)              # SDFF, 2021, p.46  
+	(amount * gasConstant * temperature) / pressure
+end
+
+# ╔═╡ 421dc004-137d-4d35-bace-d467fb9534f8
+md"
+###### The Function-Box-Diagram (FBD) of the $$specializedSpecificProcedure$$ (Fig. 3.1)
+
+is an end product of the *Specialization Process* (Fig. 3.2). The *Specialization Process* as described in a MIT-Scheme-script (SDFF, 2021, ch. 2.3) is displayed here by a separate FBD (Fig. 3.2).  
+ The identifier of the *wrapped-in* procedure (Fig. 3.1, Fig. 3.2, fenced-in with '#') is $$genericProcedure$$. This procedure is a *black box* for us and the code is untouched.
+
+For specifying the functions in the SDFF-DSL (ch.03) it is sufficient to know, that converters are automatically generated conditional on the specification of
+- 1. the in- and output SI-units (meter, nsm, kelvin, mole, cubic meter) of the *inner generic* function and
+- 2. the in- and output [BRUS-units](https://en.wikipedia.org/wiki/Imperial_units) (inch, psi, fahrenheit, mole, cubic-inch) of the *outer specific* function
+
+
+         +======================================================+
+         | specializedSpecificProcedure                         |
+         |    (e.g.: specializedIdealGasLawVolume)              |
+         |  +------------+                                      |
+         |  |   input-   |                                      |
+         |  | Converters |     #############                    |   
+     in  |  |            |  m  #           #     +-----------+  |    
+    ---->+->+-> in->m -->+---->+           #     |  output-  |  |      +---------+
+         |  |            |     # generic-  #     | Converter |  |      |         |
+     psi |  |            | nsm # Procedure # m^3 | output-   |  | in^3 | sphere- | in
+    ---->+--+->psi->nsm->+---->+ (e.g.:    +---->+ Converter +->+----->+         +-->
+         |  |            |     #  ideal-   #     | m^3->in^3 |  |      | Radius  |
+     fh  |  |            |  k  #  gasLaw-  #     |           |  |      |         |
+    ---->+->+-> fh->k -->+---->+  Volume)  #     |           |  |      +---------+ 
+         |  |            |     #           #     +-----------+  |    
+         |  +------------+     #############                    |
+         |                                                      |
+         +======================================================+
+
+Fig. 3.1 The Function-Box-Diagram (FBD) of the *Specialization Process*  
+
+   
+abbreviations:
+- fh   = fahrenheit
+- in   = inch
+- in^2 = square inch
+- in^3 = cubic inch
+- k    = kelvin
+- m    = meter
+- m^2  = square meter
+- m^3  = cubic meter
+- nsm  = newton/m^2
+- psi  = pound/in^2
+"
+
+# ╔═╡ 3b9befa2-f585-4d3f-86c9-9ad486a6c074
+md"
+###### [Psi --> Nsm (=Pascal)](https://www.unitconverters.net/pressure/psi-to-pascal.htm)
+"
+
+# ╔═╡ 066011db-a193-4639-b451-f3365198eb94
+md"
+###### [Fahrenheit --> Kelvin](https://www.unitconverters.net/) 
+"
+
+# ╔═╡ 9c15144b-e2ad-43b0-9895-9b2dcd144eca
+md"
+###### [Meter --> Inch](https://www.unitconverters.net/length-converter.html)
+"
+
+# ╔═╡ d8028160-7803-43c7-9416-20cb93045428
+md"
+$$cubicMeter\_To\_cubicInch \circ gasLawVolume: PSI \times Fahrenheit \times Mole \rightarrow Inch^3$$
+$$cubicMeter\_To\_cubicInch \circ gasLawVolume: (14.7, 68, 1) \mapsto 0.848$$
+"
+
+# ╔═╡ 63f72c15-3840-4f84-9e0a-a03f95dcfb3f
+md"
+$$gasLawVolume: Pascal(=NSM) \times Kelvin \times Mole \rightarrow m^3$$
+$$gasLawVolume: (101352.49, 293.15, 1) \mapsto 0.0240$$
+"
+
+# ╔═╡ 92f23503-f058-453d-8ea1-d320f7a396ad
+gasLawVolume(101352.48999461457, 293.15, 1) 
+
+# ╔═╡ 35ca77a7-fcd2-4fa7-8e48-20798007e43c
+md"
+###### [*radius* of a sphere](https://www.google.com/search?client=firefox-b-d&q=radius+of+sphere+calculator) in $$m$$ given its *volume* in $$m^3$$(SDFF, 2021, p.47) :
+$$r = \left(3\frac{V}{4\pi} \right)^{1/3}$$
+"
+
+# ╔═╡ 8d58edd4-66d6-4e0d-8708-cc34b1aa5566
+# sphereRadius: Meter^3 --> Meter
+function sphereRadius(volume)                # SDFF, 2021, p.47
+	((3 * volume) / (4 * pi))^(1/3)  
+end
+
+# ╔═╡ a9fe3c3d-b674-4027-aca2-9cb2d0730173
+pi                                           # Julia's pi
+
+# ╔═╡ 3d2d821b-3a0b-4085-9cd6-c1594117c6bb
+π                                            # Julia's π 
+
+# ╔═╡ c0ad93d9-a1cc-451a-b5b8-4c135ecf3b3e
+pi == π                                      # identity
+
+# ╔═╡ 908e8a01-497e-4864-adde-f9896b3e103b
+SDFFsPi = 4 * atan(1, 1)                     # SDFF's pi, p.47
+
+# ╔═╡ 98f5faad-5562-4df3-8abb-abb62ffcf85d
+abs(π - SDFFsPi)                             # deviation ?
+
+# ╔═╡ d127a328-b056-48e5-8004-c3c200e44515
+                                             # sphereRadius: Meter^3 --> Meter
+sphereRadius(1.0^3)                          # sphereRadius: 1 m^3 |--> 0.6203 m
+
+# ╔═╡ f8c2400b-e738-4b04-af49-56dd93b58d36
+md"""
+###### function $$makeUnitConversion: Function^2 \rightarrow (Function \times Function)$$
+*A unit conversion is a procedure that is linked to its inverse.* (SDFF, 2921, p.47) :
+"""
+
+# ╔═╡ 3cd05702-1b2a-4ccf-9a00-462d07254b6b
+function makeUnitConversion(                 # SDFF, 2021, p.47
+	unit1_To_unit2::Function, 
+	unit2_To_unit1::Function)
+	(unit1_To_unit2, unit2_To_unit1)::Tuple{Function, Function}
+end   
+
+# ╔═╡ 31c51f31-9571-4a8b-8a90-49aff9692f53
+md"
+###### Mole <--> Mole
+"
+
+# ╔═╡ 5390f189-daaf-4cce-9f0e-0de26ff56363
+function mole_To_mole(mo)                    # (obligatory in SDFF, 2021, p.49)
+	mo = mo
+end
+
+# ╔═╡ 7bd1a48b-b5f2-4c48-99f5-e9c869d48147
+function mole_oT_mole(mo)                    # (obligatory in SDFF, 2021, p.49)
+	mo = mo
+end
+
+# ╔═╡ 57e12d95-e8f7-4f35-a1bb-3e718ed0add8
+# bijective identity (obligatory in SDFF, 2021, p.49)
+mole_TooT_mole::Tuple{Function, Function} =
+	makeUnitConversion(mole_To_mole, mole_oT_mole)::Tuple{Function, Function}
+
+# ╔═╡ f114f3ab-086c-44af-a934-fb22139c0b6f
+md"
+###### [Fahrenheit <--> Celsius](https://www.google.com/search?client=firefox-b-d&q=fahrenheit+to+celsius+converter)
+"
+
+# ╔═╡ 042ce057-5b67-4130-99ee-eaffc5bddb42
+function f_To_c(f) 
+	5/9 * (f - 32)                           # Fahrenheit -> Celsius, SDFF, 2021, p.47
+end
+
+# ╔═╡ 851bd824-cee3-4cac-ab9a-836948855fc7
+function c_To_f(c)                           # Celsius -> Fahrenheit, SDFF, 2021,p.47 
+	(c * 9/5) + 32
+end
+
+# ╔═╡ a01d3a32-3930-4cc7-a50a-5c5701ad6b44
+f_To_c(-40)                                  # Fahrenheit -> Celsius, SDFF, 2021, p.47
+
+# ╔═╡ 0aea15bf-0beb-481c-a510-1d40eaf70860
+f_To_c(32)                                   # Fahrenheit -> Celsius, SDFF, 2021, p.47
+
+# ╔═╡ 61587052-1ccc-435e-a3dd-8ba25b48f3d1
+c_To_f(-40)                                  # Celsius -> Fahrenheit, SDFF, 2021, p.47
+
+# ╔═╡ b549ae09-47e5-464f-bae3-ca209ce8a374
+c_To_f(0)                                    # Celsius -> Fahrenheit, SDFF, 2021, p.47
+
+# ╔═╡ 8b86058b-dd3c-4147-b149-875f4e86c844
+makeUnitConversion(f_To_c, c_To_f)::Tuple{Function, Function} # SDFF, 2021, p.47
+
+# ╔═╡ 4651f613-958b-4766-8313-c8239c6792dd
+typeof(makeUnitConversion(f_To_c, c_To_f)) <: Tuple
+
+# ╔═╡ 7c68efd4-30c3-4a63-b1ae-f872d2c51ffc
+typeof(makeUnitConversion(f_To_c, c_To_f)) <: Tuple{Function, Function}
+
+# ╔═╡ eda99383-24bf-4508-a6e7-f6d2e6ad9d67
+makeUnitConversion(f_To_c, c_To_f)[1](-40)   # f_To_c: Fahrenheit --> Celsius
+
+# ╔═╡ 6876efd3-f069-46c9-a4bb-0c6a104c79c4
+makeUnitConversion(f_To_c, c_To_f)[1](32)    # f_To_c: Fahrenheit --> Celsius
+
+# ╔═╡ b5a5d188-6701-4fea-9702-686060f98144
+makeUnitConversion(f_To_c, c_To_f)[2](-40)   # c_To_f: Celsius --> Fahrenheit
+
+# ╔═╡ d335c7af-32e9-48ed-8b1c-0d22dd486884
+makeUnitConversion(f_To_c, c_To_f)[2](0)     # c_To_f: Celsius --> Fahrenheit
+
+# ╔═╡ 10e0f5ac-d96b-4f11-8827-cc942f5149a3
+# bijective Fahrenheit <--> Celsius; SDFF, 2021, p.47
+fahrenheit_TooT_celsius::Tuple{Function, Function} = 
+	makeUnitConversion(f_To_c, c_To_f)::Tuple{Function, Function}
+
+# ╔═╡ 057a4dfd-5905-4185-a8d6-11a7772f987d
+typeof(fahrenheit_TooT_celsius) <: Tuple{Function, Function}
+
+# ╔═╡ 2a883483-a0e5-496f-b358-7675d0e204dd
+f_To_c === fahrenheit_TooT_celsius[1]        # identical functions ! 
+
+# ╔═╡ 259aee79-dd8a-468d-b609-08013bd33744
+c_To_f === fahrenheit_TooT_celsius[2]        # identical functions ! 
+
+# ╔═╡ 45d3a216-e014-462c-9a59-d03a1013992f
+fahrenheit_TooT_celsius[1](-40)              # Fahrenheit -> Celsius, SDFF, 2021, p.47
+
+# ╔═╡ 8fe70274-7356-44cf-909e-9c329f28759b
+fahrenheit_TooT_celsius[1](32)               # Fahrenheit -> Celsius, SDFF, 2021, p.47
+
+# ╔═╡ 2d9d0820-2590-4822-9b94-47e5f7c71349
+md"
+###### [Celsius <--> Kelvin](https://www.google.com/search?client=firefox-b-d&q=clesius+to+kelvin) (SDFF, 2021, p.47)
+"
+
+# ╔═╡ 6d2e1d8d-32ab-4a93-9a6e-33baa7e4486f
+begin
+	zeroCelsius = 273.15                     # SDFF, 2021, p.47
+	c_To_k(c) = c + zeroCelsius              # c_To_k: Celsius -> Kelvin
+	k_To_c(k) = k - zeroCelsius              # k_To_c: Kelvin  -> Celsius
+end 
+
+# ╔═╡ e8fcd3e8-23ff-419f-9948-6c2baa6378cd
+c_To_k(1)                                    # 1 Celsius to 274 Kelvin
+
+# ╔═╡ c18bd9dc-e3cb-4279-a7bf-98ce12e1cf87
+k_To_c(1)                                    # 1 Kelvin to -272 Celsius
+
+# ╔═╡ 04623fc5-0dc5-41c2-8d33-9e7605adf20f
+# bijective Celsius <--> Kelvin; SDFF, 2021, p.47
+celsius_TooT_kelvin::Tuple{Function, Function} =   
+	let zeroCelsius = 273.15
+		makeUnitConversion(c_To_k, k_To_c)::Tuple{Function, Function}
+	end # let
+
+# ╔═╡ 1471641b-5360-405b-8b83-3773d9d519e7
+typeof(celsius_TooT_kelvin) <: Tuple{Function, Function}
+
+# ╔═╡ 29e2ca91-432b-47aa-b69c-e22f4530cab0
+celsius_TooT_kelvin[1](1)                    # 1 Celsius to 274 Kelvin
+
+# ╔═╡ 885f9a1d-2206-49a1-8095-af5bab5d25e1
+celsius_TooT_kelvin[2](1)                    # 1 Kelvin to -272 Celsius
+
+# ╔═╡ a4e7644a-fb37-47af-a6c4-d2dd3d46d5d5
+md"
+###### *composition* of unit-conversions (SDFF, 2021, p.48)
+###### *n-ary* method of function 'compose'
+"
+
+# ╔═╡ 22104f35-75f7-4a84-bf1f-e8949f450327
+function compose(f::Function, gs...)::Function       # SDFF, 2021, p.48
+	#--------------------------------------------------------------------
+	function iter(foo, hs)
+		if length(hs) == 0
+			foo
+		elseif length(hs) == 1
+			foo ∘ hs[1]
+		else 
+			iter(foo ∘ hs[1], hs[2:end])
+		end # if
+	end
+	#--------------------------------------------------------------------
+	# return a n->1-ary anonymous composed function f ∘ ... ∘ h
+    (args...) -> iter(f, gs)(args...)
+end # function
+
+# ╔═╡ 36c47b37-7808-49e4-a95c-959471ea62fd
+# 80 Fahrenheit -> 300 Kelvin; SDFF, 2021, p.48
+compose(celsius_TooT_kelvin[1], fahrenheit_TooT_celsius[1])(80)  
+
+# ╔═╡ 4eb5fdc7-4dbb-40c2-813c-7d698f1572e9
+md"
+###### [PSI <--> NSM (= Pascal)](https://www.unitconverters.net/pressure/psi-to-newton-square-meter.htm), SDFF, 2021, p.48
+
+$\;$
+ 
+$1\cdot PSI = \frac{P}{in^2} = 6894 \cdot \frac{N}{m^2} = 6894 \cdot NSM (= Pascal)$
+
+$\;$
+$\;$
+
+"
+
+# ╔═╡ e49ff440-143b-4e77-ab30-9ee0a4f685bf
+md" 
+the composition in SDFF, 2021, p.48 uses the MIT/GNU-Scheme function *unit:invert* in the expression *(unit:invert inch-to-meter)* which is equivalent to our indexed tuple-expression *inch_TooT_meter[2]*. This selects the desired inverse *m\_To_in* - function.
+"
+
+# ╔═╡ 118f779c-509f-4b52-bbcb-a8659fe3f94a
+md"
+###### Proof PSI --> NSM (= Pascal)
+
+The correctness of the above composition is a bit mysterious. In a kind of self-explantion we provide here a proof of correctness.
+
+###### Claim: 
+
+$\;$
+
+$(PSI \rightarrow NSM) := (P \rightarrow N) \circ (In^2 \leftarrow M^2)$
+
+$\;$
+
+which is
+
+$\;$
+
+$(psi\_To\_nsm: psi \mapsto e \cdot nsm) :=$
+
+$\;$
+
+$(p\_To\_n: p \mapsto c \cdot n) \circ (m\_To\_in: m \mapsto d \cdot m) \circ (m\_To\_in: m \mapsto d \cdot m)$
+
+$\;$
+
+$=(p\_To\_n: p \mapsto c \cdot n) \circ (m^2\_To\_in^2: m^2 \mapsto d^2 \cdot m^2).$
+
+$\;$
+
+We can write this as a conventional function nesting:
+
+$psi\_To\_nsm(.) := p\_To\_n \circ m^2\_To\_in^2(.) = p\_To\_n(m^2\_To\_in^2(.)).$
+
+$\;$
+
+The claim is that we apply this composition to $$(PSI=psi)-$$arguments, we get $(NSM=nsm)-$ values:
+
+$psi\_To\_nsm(psi) := p\_To\_n(m^2\_To\_in^2(psi))= nsm.$
+
+$\;$
+
+"
+
+# ╔═╡ 0cc90027-c5dc-4e3f-825d-705a5eefcc08
+md"
+
+###### Proof:
+
+$(psi\_To\_nsm: psi \mapsto e \cdot nsm) :=$
+
+$\;$
+
+$(p\_To\_n: p \mapsto c \cdot n) \circ (m^2\_To\_in^2: m^2 \mapsto d^2 \cdot m^2)$
+
+$\;$
+
+Functions can be written as equations:
+
+$(nsm = e \cdot psi) :=$
+
+$\;$
+
+$(n = c \cdot p) \land (in^2 = d^2 \cdot m^2)$
+
+$\;$
+
+The function $psi\_To\_nsm$ maps $psi$ to $nsm$, so we use the last function composition and apply it to $psi$:
+
+$(p\_To\_n: n = c \cdot p) \circ (m^2\_To\_in^2: in^2 = d^2 \cdot m^2)(psi)$
+
+$\;$
+
+$(n = c \cdot p) \land (in^2 \cdot psi = d^2 \cdot m^2 \cdot psi)$
+
+$\;$
+
+introducing the definition of $psi = \frac{p}{in^2}$ we get:
+
+$(n = c \cdot p) \land (in^2 \cdot \frac{p}{in^2} = d^2 \cdot m^2 \cdot psi)$
+
+$\;$
+$\;$
+
+and then we can cancel $in^2$, so we can simplify:
+
+$(n = c \cdot p) \land (p = d^2 \cdot m^2 \cdot psi)$
+
+$\;$
+$\;$
+
+"
+
+# ╔═╡ b7ff1550-56f9-4f67-b8ab-42f4933165ff
+md"
+We can insert the definition of $p := d^2 \cdot m^2 \cdot psi$ into the left equation:
+
+$n = c \cdot d^2 \cdot m^2 \cdot psi.$
+
+$\;$
+
+Now we use the definition of $nsm := \frac{n}{m^2}$ or $n: = nsm \cdot m^2$ and insert this definition into the above equation:
+
+$nsm \cdot m^2 = c \cdot d^2 \cdot m^2 \cdot psi.$
+
+$\;$
+
+We can cancel $m^2:$
+
+$nsm = c \cdot d^2 \cdot psi.$
+
+$\;$
+
+We contract the product $c \cdot d^2$ to the new constant $e:$
+
+$nsm = e \cdot psi,$
+
+$\;$
+
+which is equivalent to the mapping
+
+$psi\_To\_nsm: psi \mapsto nsm \;\blacksquare$
+
+$\;$
+$\;$
+
+"
+
+# ╔═╡ 81e863e0-50b4-4996-9b7e-d0e8b5a60762
+md"""
+###### "*So now we can compute, in inches, the radius of a sphere occupied by 1 mole of an ideal gas at 68 degrees Fahrenheit and 14.7 psi*", (Hanson & Sussman, SDFF, 2021, p.48
+"""
+
+# ╔═╡ 48c0f361-ed2a-46da-b623-d740c459601d
+2/6894
+
+# ╔═╡ 608bc838-0532-412b-b157-65ce1faab3c9
+md"
+###### bijective function $$psi\_TooT\_nsm$$ (SDFF, 2021, p.48)
+direction = 1: PSI --> NSM; direction = 2: PSI <-- NSM
+"
+
+# ╔═╡ a00b5001-4d5b-4a56-8767-69beccc1e8f0
+compose(celsius_TooT_kelvin[1], fahrenheit_TooT_celsius[1])(68)     # SDFF, 2021, p.48
+
+# ╔═╡ 5f67a91f-93d7-4654-a786-b8f2d572d262
+md"
+###### logic of this *gas law* computation
+1. The measures psi=14.7 and fahrenheit=68 are converted to SI-units 101352.49 nsm(= pascal) and kelvin=293.15. 
+2. Next the function combination of sphereRadius and gasLawVolume-functions are applied to these SI-units. The result is the radius in meter. 
+3. For users in UK and US the SI-unit meter is then mapped back to inch = 7.0496 with converter $m\_To\_in$.
+"
+
+# ╔═╡ 362e51ef-6614-4db6-a101-b044a8a93cf7
+md"
+$m\_To\_in \circ sphereRadius \circ gasLawVolume: PSI \times Fahrenheit \times Mole \rightarrow Inch$
+
+$\;$
+
+$m\_To\_in \circ sphereRadius \circ gasLawVolume: (14.7, 68, 1) \mapsto 7.0496$
+
+$\;$
+$\;$
+
+"
+
+# ╔═╡ fd47b052-db8c-42d8-b319-b9c13710d693
+md"
+###### Composing with Julia's $$\circ$$
+"
+
+# ╔═╡ a6343d9f-1867-4c14-84c4-e472fd6ac6bb
+md"
+###### Piping with Julia's |>
+"
+
+# ╔═╡ c269985e-2e8d-41ff-bd7f-f470d5daa9fa
+md"
+---
+##### 2.3.1 Specialization Wrappers (SDFF, ch. 2.3.1, p.49)
+*We can build a small domain-specific luanguage, where the domain is units. This will simplify the job of constructing new converters, and make the resulting converters more readable.*(SDFF, 2021, p.48)
+"
+
+# ╔═╡ eabc5523-6858-45d5-a78a-e8e5d872c6e0
+md"
+###### logic of this *gas law* computation
+1. The measures psi=14.7 and fahrenheit=68 are converted to SI-units 101352.49 nsm(= pascal) and kelvin=293.15. 
+2. Next the function combination of sphereRadius and gasLawVolume-functions are applied to these SI-units. The result is the radius in meter. 
+3. For users in UK and US the SI-unit meter is then mapped back to inch = 7.0496 with converter $$m\_To\_in$$.
+"
+
+# ╔═╡ c07fed73-d9b2-41ea-892d-291d0e72835a
+md"
+###### The Function-Box-Diagram (FBD) of the $$specializedSpecificProcedure$$ (Fig. 3.1)
+
+is an end product of the *Specialization Process* (Fig. 3.2). The *Specialization Process* as described in a MIT-Scheme-script (SDFF, 2021, ch. 2.3) is displayed here by a separate FBD (Fig. 3.2). 
+ The identifier of the *wrapped-in* procedure (Fig. 3.1, Fig. 3.2) fenced-in with '#') is $$genericProcedure$$. This procedure is a *black box* for us and the code is untouched.
+For specifying the functions in the SDFF-DSL it is sufficient to know, that converters are automatically generated conditional on the specification of
+- 1. the in- and output SI-units (meter, nsm, kelvin, mole, cubic meter) of the *inner generic* function and
+- 2. the in- and output [BRUS-units](https://en.wikipedia.org/wiki/Imperial_units) (inch, psi, fahrenheit, mole, cubic-inch) of the *outer specific* function
+
+
+
+         +======================================================+
+         | specializedSpecificProcedure                         |
+         |    (e.g.: specializedIdealGasLawVolume)              |
+         |  +------------+                                      |
+         |  |   input-   |                                      |
+         |  | Converters |     #############                    |   
+     in  |  |            |  m  #           #     +-----------+  |    
+    ---->+->+-> in->m -->+---->+           #     |  output-  |  |      +---------+
+         |  |            |     # generic-  #     | Converter |  |      |         |
+     psi |  |            | nsm # Procedure # m^3 | output-   |  | in^3 | sphere- | in
+    ---->+--+->psi->nsm->+---->+ (e.g.:    +---->+ Converter +->+----->+         +-->
+         |  |            |     #  ideal-   #     | m^3->in^3 |  |      | Radius  |
+     fh  |  |            |  k  #  gasLaw-  #     |           |  |      |         |
+    ---->+->+-> fh->k -->+---->+  Volume)  #     |           |  |      +---------+ 
+         |  |            |     #           #     +-----------+  |    
+         |  +------------+     #############                    |
+         |                                                      |
+         +======================================================+
+
+
+Fig. 3.1 The $$specializedProcedure$$ as a Function-Box-Diagram (FBD) is an end result of the *Specialization Process* 
+
+   
+abbreviations:
+- fh   = fahrenheit
+- in   = inch
+- in^2 = square inch
+- in^3 = cubic inch
+- k    = kelvin
+- m    = meter
+- m^2  = square meter
+- m^3  = cubic meter
+- nsm  = newton/m^2
+- psi  = pound/in^2
+"
+
+# ╔═╡ 4e12ba69-eadf-484b-a2f7-993ae075f2a9
+md"
+
+                +---------------------------------------------------------------+
+                | specializeGenericProcedure                                    |
+                |                                                               |
+                |            +---------------------------------------------+    |
+    ########### |            |  specializeSpecificProcedure                |    |
+    #generic- # |            |                                             |    |
+    #--------->+             |        +===============================+    |    |
+    #procedure# |            |        | specializedSpecificProcedure  |    output
+    ########### |  interface |   args |                               | (=application
+                |  --------->+  ----->+                               +----+----+--->
+     interface  |     args   |        |                               | of specialized
+     ---------->+            |        +===============================+ SpecificProc
+        args    |            |                                              to args)
+                |            +---------------------------------------------+    |
+                |                                                               |
+                +---------------------------------------------------------------+
+
+Fig. 3.2 The Function-Box-Diagram (FBD) of the $$specializeGenericProcedure$$
+
+
+"
+
+# ╔═╡ fe54735a-64e2-4b0f-8cda-fb414f6c99ab
+md"
+###### renamed procedures:     SDFF --> PCM
+                         unitSpecializer --> specializeGenericProcedure          
+             makeSpecializedGasLawVolume --> specializedGenericProcedure
+                                             #         ^-----------'d'
+                conventionalGasLawVolume --> specializedSpecificProcedure
+                                             #         ^-----------'d'
+"
+
+# ╔═╡ 32f2fe70-0beb-40db-8d6d-81c83ee72cc2
+md"
+---
+##### 2.3.2 Implementing Specializers (SDFF, ch. 2.3.1, p.50ff)
+"
+
+# ╔═╡ 034ba155-c61c-4b29-9067-28cf275ecad6
+# Scheme's apply (e.g. "(apply foo args") is translated to: "foo(args...)"
+#   'apply' is used in 'uni-specializer' in SDFF, 2021, p.50
+begin
+	let foo = +, args = (1, 2, 3)
+		foo(args...)  # => 6
+	end # let
+end
+
+# ╔═╡ e47735c9-13ac-4f9e-8bfc-21bf83b584a8
+md"
+###### renamed procedures, parameters, and variables:     SDFF --> PCM        
+
+                        unitSpecializer --> specializeGenericProcedure         
+            makeSpecializedGasLawVolume --> specializedGenericProcedure
+               conventionalGasLawVolume --> specializedSpecificProcedure 
+                            specializer --> specializeSpecificProcedure 
+                     implicitOutputUnit --> genProc_Output (= generic  procedure ...)
+                     implicitInputUnits --> genProc_Inputs (= generic  procedure ...)
+                     specificOutputUnit --> specProc_Output(= specific procedure ...)
+                     specificInputUnits --> specProc_Inputs(= specific procedure ...)
+                   specializedProcedure --> applySpecializedProcedure
+"
+
+# ╔═╡ e65f0d59-605d-405b-9f91-c05e3251eb99
+md"
+###### $$specializeGenericProcedure$$ is a slightly simplified version of $$unitSpecializer$$ with some renamed identifiers
+"
+
+# ╔═╡ e1e9f9aa-4513-4348-9975-2594e0c83c4f
+md"
+###### *compound* unit-conversions, SDFF, 2021, p.48
+"
+
+# ╔═╡ 884dd73d-d051-41ae-b9ac-85bd3f3de498
+md"
+###### [Inch <--> Meter](https://www.google.com/search?client=firefox-b-d&q=inch+to+meter) (SDFF, 2021, p.48)
+"
+
+# ╔═╡ 930c399e-b111-4b8c-8ed8-1fcb530badd4
+function in_To_m(in)
+	in / 39.37                                       # in_To_m: Inch --> Meter
+end
+
+# ╔═╡ 7115c988-b3a2-4dc2-9ec8-a53d8faffe2b
+typeof(compose(in_To_m)) <: Function
+
+# ╔═╡ bbb1f8a5-81e7-443d-ac59-86ef968b94b5
+compose(in_To_m)(1)                                   # 1 inch --> 0.0254 meter
+
+# ╔═╡ 3999ca88-cda6-4aa3-9ca7-4eeb3ea066ba
+compose(in_To_m, in_To_m)(1)                          # 1 inch^2 --> 0.0254^2 meter^2
+
+# ╔═╡ 38a66a6a-5250-4076-8711-f6fca68da2ee
+(compose(in_To_m)(1))^2 - compose(in_To_m, in_To_m)(1) < 1.E-18
+
+# ╔═╡ 86364d23-30a2-477c-9881-8ee8e55a39d4
+ # 1 inch^4 --> 0.0254^4 meter^4 = 0.0000004162
+compose(in_To_m, in_To_m, in_To_m, in_To_m)(1)       
+
+# ╔═╡ 815edd40-c718-4c46-9490-52857ce65c42
+abs(compose(in_To_m)(1))^4 - compose(in_To_m, in_To_m, in_To_m, in_To_m)(1) < 1.E-21
+
+# ╔═╡ 86f80bed-0737-412d-866f-304de180aafd
+in_To_m(1)                                           # 1 Inch -> 0.025 Meter = 2,5 cm
+
+# ╔═╡ f4df07b8-a0c3-4fb2-b9b9-3f5aa3e96e73
+function m_To_in(m) 
+	m * 39.37                                        # m_To_in: Meter --> Inch 
+end
+
+# ╔═╡ 81ac756f-eb4a-4744-b55a-ea6d14cfe5b0
+m_To_in
+
+# ╔═╡ ca520b24-1be9-4c9c-a4b4-4c26cff60358
+m_To_in(1)                                   # 1 meter |--> 39.37 inch
+
+# ╔═╡ 9c0f4810-d748-4a86-b711-98d5f97ff983
+m_To_in(0.17906072991796076)                 
+
+# ╔═╡ b4828813-5876-438a-908e-5df449811a83
+m_To_in(1)                                           # 1 Meter --> 39.4 Inch 
+
+# ╔═╡ 1975af30-06e5-49a2-baa8-9b32b3a04be8
+# bijective function Inch <-> Meter; SDFF, 2021, p.48
+inch_TooT_meter::Tuple{Function, Function} =         
+	makeUnitConversion(in_To_m, m_To_in)::Tuple{Function, Function}
+
+# ╔═╡ b84a542a-7b37-4dae-87e6-ce18df6f74bb
+typeof(inch_TooT_meter) <: Tuple{Function, Function}
+
+# ╔═╡ ac437878-63e8-41a7-bb75-b571f715ed28
+in_To_m === inch_TooT_meter[1]              # (Inch --> Meter) === inch_TooT_meter(1) 
+
+# ╔═╡ f7795722-0c3c-4a01-b98d-837cff07ab7f
+m_To_in === inch_TooT_meter[2]              # (Inch <-- Meter) === inch_TooT_meter(2) 
+
+# ╔═╡ 94ca314a-533b-4226-b368-bbe967e9921f
+md"
+###### [Pound <--> Newton](https://www.google.com/search?client=firefox-b-d&q=pound+to+newton) (SDFF, 2021, p.48)
+"
+
+# ╔═╡ ea6bec56-c4a6-4c15-ab9a-bbf990aab1d0
+ function p_To_n(p) 
+	 p * 4.44822                                     # p_To_n: Pound --> Newton
+ end
+
+# ╔═╡ 1327b31f-e729-4667-a6e4-2d237209ac25
+compose(p_To_n, m_To_in, m_To_in)(1)
+
+# ╔═╡ 801418f6-d832-4844-b552-e00ce1349a10
+p_To_n(1)                                            # 1 Pound --> 4.4 Newton
+
+# ╔═╡ d5d459ce-e026-440d-a7db-6dc6cad51476
+function n_To_p(n)
+	n / 4.44822                                      # n_To_p: Newton --> Pound
+end
+
+# ╔═╡ 59dc2962-cd78-43da-b0da-6c1fe3863cef
+n_To_p(1)                                            # 1 Newton --> 0.2248 Pound  
+
+# ╔═╡ 687bf314-65e8-4113-af0b-5171bd84898a
+# bijective function Pound <-> Newton; SDFF, 2021, p.48
+pound_TooT_newton::Tuple{Function, Function} =       # Pound <-> Newton
+	makeUnitConversion(p_To_n, n_To_p)::Tuple{Function, Function}
+
+# ╔═╡ 05c9549e-33d6-4661-b5af-127a6ec3df28
+psi_To_nsm::Function = 
+	compose(pound_TooT_newton[1], inch_TooT_meter[2], inch_TooT_meter[2])::Function
+
+# ╔═╡ 490cda21-c361-43e2-becd-f5a0e9485595
+psi_To_nsm
+
+# ╔═╡ 054956d6-f3a4-45d8-ad0d-b4ddd92df08b
+psi_To_nsm(1.0)                               # 1 psi |--> 6894.7 pascal
+
+# ╔═╡ 14e15d65-453b-47f3-85b6-0a44c9540e4d
+psi_To_nsm(14.7)
+
+# ╔═╡ d75549ab-3671-495a-bb82-cc606c387997
+psi_To_nsm(1)
+
+# ╔═╡ e2f94f73-575c-4f15-b3af-a68cda1e7d77
+psi_To_nsm(14.7)
+
+# ╔═╡ 18b57371-6545-4ad1-aa44-3a0d497f53f4
+psi_To_nsm(1)                           # 1 PSI --> 6894 NSM  (P/in^2 --> N/m^2)   
+
+# ╔═╡ 0b453ab6-1a55-4e24-875b-38619f9ea260
+psi_To_nsm(2)                           # 2 PSI --> 13789.45 NSM  (P/in^2 --> N/m^2)
+
+# ╔═╡ 640998dc-380e-4acb-9bdc-c137b9cfd2ef
+psi_To_nsm(14.7)                        # 14.7 PSI --> 101352 NSM  (P/in^2 --> N/m^2) 
+
+# ╔═╡ 50f3b224-6352-4160-a62f-e6d71389df8c
+compose(pound_TooT_newton[1], inch_TooT_meter[2], inch_TooT_meter[2])(1)
+
+# ╔═╡ c2849be0-d4ef-47a4-a515-bddec91515c7
+# NSM --> PSI                           # reverse direction
+nsm_To_psi::Function = 
+	compose(pound_TooT_newton[2], inch_TooT_meter[1], inch_TooT_meter[1])::Function
+
+# ╔═╡ 0b197d24-47df-43fb-a814-8597b0b87d3e
+nsm_To_psi(1)                           # 1 NSM --> 1/6894 PSI = 0.00014 PSI
+
+# ╔═╡ b04c3412-1980-4a91-ab50-e1ae3a8aff07
+nsm_To_psi(2)                           # 2 NSM --> 2/6894 PSI = 0.00029 PSI
+
+# ╔═╡ 0173f9c9-e2fe-4e4a-9664-c770ec407bfa
+psi_TooT_nsm::Tuple{Function, Function} =
+	makeUnitConversion(psi_To_nsm, nsm_To_psi)::Tuple{Function, Function}
+
+# ╔═╡ 8a071b76-3c87-47bd-9157-5c13f797089a
+typeof(pound_TooT_newton) <: Tuple{Function, Function}
+
+# ╔═╡ 07ab67cc-bf1a-49ac-bdf0-969b0ea9f7f5
+p_To_n === pound_TooT_newton[1]                     # Pound --> Newton
+
+# ╔═╡ bdec9181-5547-4121-81a6-56127210289a
+n_To_p === pound_TooT_newton[2]                     # Newton --> Pound
+
+# ╔═╡ f9eeb23a-c753-420f-bbb2-41efc32bf90f
+pound_TooT_newton[1](1)                             # 1 Pound --> 4.4 Newton
+
+# ╔═╡ 649fe77f-72df-4b6b-b9b6-2a6aac830cde
+pound_TooT_newton[2](1)                             # 1 Newton --> 0.2248 Pound  
+
+# ╔═╡ d1bfe4f8-9f78-47a5-99b9-1dbffd9a34d9
+md"
+###### [$$\mathbf{Inch^2\leftrightarrow Meter^2}$$](https://www.google.com/search?client=firefox-b-d&q=square+inch+to+square+meter) (SDFF, 2021, p.48)
+" 
+
+# ╔═╡ cadc72ec-8f02-489f-9e21-e272d2acdb49
+typeof(compose(inch_TooT_meter[1], inch_TooT_meter[1])) <: Function
+
+# ╔═╡ bf258554-9d63-40be-8687-fbe64d3cd7e8
+compose(inch_TooT_meter[1], inch_TooT_meter[1])(1)  # 1^2 in^2 --> 0.0006 m^2 = 6 cm^2
+
+# ╔═╡ 94c57c95-e032-4f73-80a4-1bc81e046eda
+abs((compose(inch_TooT_meter[1])(1))^2 - 
+	compose(inch_TooT_meter[1], inch_TooT_meter[1])(1)) <= 1.E-18
+
+# ╔═╡ d3900531-9dcc-46d1-88d9-41b1223ce74c
+compose(inch_TooT_meter[2], inch_TooT_meter[2])(1)  # 1^2 m^2 --> 1550 in^2
+
+# ╔═╡ 26446e02-54cd-4d49-8769-c66bdfd92e63
+abs((compose(inch_TooT_meter[2])(1))^2 - 
+	compose(inch_TooT_meter[2], inch_TooT_meter[2])(1)) <= 1.E-18
+
+# ╔═╡ c553d119-8eb9-4dcc-8476-7d0510420859
+md"
+###### [$$\mathbf{Inch^3\leftrightarrow Meter^3}$$](https://www.google.com/search?client=firefox-b-d&q=square+inch+to+square+meter) (SDFF, 2021, p.48)
+" 
+
+# ╔═╡ 38cb8988-da0c-4009-93c6-d7c68a0608a8
+# cubic inch --> cubic meter
+function cubicInch_To_cubicMeter(cubicIn) 
+	cubicMe = (cubicIn / 39.37)^3
+end
+
+# ╔═╡ 4c0dd0c2-20a0-47c3-89ef-b4b277e18be2
+cubicInch_To_cubicMeter(1)
+
+# ╔═╡ a3cfa9fd-8668-468e-bc5e-029276304041
+# cubic meter --> cubic inch
+function cubicMeter_To_cubicInch(cubicMe)
+	cubicIn = (cubicMe * 39.37)^3
+end
+
+# ╔═╡ 53acbc6b-4ac7-4879-b2ac-790653c966b4
+cubicMeter_To_cubicInch(1)
+
+# ╔═╡ 7bc01491-321f-46ca-91c7-2d8ae3436085
+# bijective identity (necessary in SDFF, 2021, p.49)
+cubicInch_TooT_cubicMeter::Tuple{Function, Function} =
+	makeUnitConversion(
+		cubicInch_To_cubicMeter, cubicMeter_To_cubicInch)::Tuple{Function, Function}
+
+# ╔═╡ 30ec4721-80f5-4666-b511-eb0baea679ff
+# bijective identity (necessary in SDFF, 2021, p.49)
+cubicMeter_TooT_cubicInch::Tuple{Function, Function} =
+	makeUnitConversion(
+		cubicMeter_To_cubicInch, cubicInch_To_cubicMeter)::Tuple{Function, Function}
+
+# ╔═╡ 0e6aa94e-aefa-44fe-a72a-f02ca6ce9191
+# compose(...): Fahrenheit --> Kelvin
+# compose(...): 68 |--> 293.15
+compose(celsius_TooT_kelvin[1], fahrenheit_TooT_celsius[1])(68)
+
+# ╔═╡ 96e1374c-70e0-442e-a472-ac7463639e63
+md"
+$$gasLawVolume: Pascal(=NSM) \times Kelvin \times Mole \rightarrow m^3$$
+$$gasLawVolume: (101352.49, 293.15, 1) \mapsto 0.0240$$
+"
+
+# ╔═╡ 0d675afc-4538-415f-bda5-b3118f0e3bf8
+gasLawVolume(                                                           # m^3
+	psi_To_nsm(14.7),                                                   # pressure
+	compose(celsius_TooT_kelvin[1], fahrenheit_TooT_celsius[1])(68),    # temperature
+	1)                                                                  # amount
+
+# ╔═╡ 0f5e05f6-19c4-4c15-a236-64856d6d7a95
+md"
+$$sphereRadius \circ gasLawVolume: PSI \times Fahrenheit \times Mole \rightarrow Meter$$
+$$sphereRadius \circ gasLawVolume: (14.7, 68, 1) \mapsto 0.1790$$
+"
+
+# ╔═╡ 2c51bc81-5f37-47e4-b232-c827790c4e29
+sphereRadius(                                                           # m
+	gasLawVolume(                                                       # m^3
+		psi_To_nsm(14.7),                                               # pressure
+		compose(celsius_TooT_kelvin[1], fahrenheit_TooT_celsius[1])(68),# temperature
+		1)                                                              # amount
+)
+
+# ╔═╡ ce2b0389-0522-4e94-b1dd-2daf3d072094
+md"
+$$m\_To\_in \circ sphereRadius \circ gasLawVolume: PSI \times Fahrenheit \times Mole \rightarrow Inch$$
+$$m\_To\_in \circ sphereRadius \circ gasLawVolume: (14.7, 68, 1) \mapsto 7.0496$$
+"
+
+# ╔═╡ b79f849a-6373-4733-b324-ef5d1ef734fa
+# (psi, fahrenheit, mole) |--> in ;                                # SDFF, 2021, p.48
+inch_TooT_meter[2](             # this is equival. to 'me_To_in' 
+	sphereRadius(
+		gasLawVolume(
+			psi_TooT_nsm[1](14.7),                                 # pressure
+			compose(
+				celsius_TooT_kelvin[1],                            # temperature
+				fahrenheit_TooT_celsius[1])(68)                    #  "    " 
+			, 1)                                                   # amount 
+	)
+)
+
+# ╔═╡ b04bbfce-bd0b-4d82-8837-bc33199d8803
+md"
+---
+##### idiomatic Julia operators *composition* $$\circ$$ and *piping* |> :
+"
+
+# ╔═╡ 0b50d95c-f1d3-4239-ba75-5b613c6c0fd5
+(celsius_TooT_kelvin[1] ∘ fahrenheit_TooT_celsius[1])(80)          # SDFF, 2021, p.48
+
+# ╔═╡ a559d3d8-5cb1-4659-9ed3-f7148ceff191
+80 |> fahrenheit_TooT_celsius[1] |> celsius_TooT_kelvin[1]         # SDFF, 2021, p.48
+
+# ╔═╡ a162b3a4-76e5-4c0e-867a-f65dacb54085
+md"
+###### *generating* lookup table for appropriate *bijective* converters; SDFF, 201, p.50
+"
+
+# ╔═╡ 8816d89b-3be7-42f8-a68c-37b10502a9cd
+tableOfConversions = Dict{Tuple{Symbol, Symbol}, Function}()      # SDFF, 201, p.50
+
+# ╔═╡ 14a25b66-5768-43d8-8ddf-05884c5571e7
+md"
+###### *function* $$registerUnitConversion$$ (SDFF, 2021, p.51)
+"
+
+# ╔═╡ 2ae6a50f-fc04-4d8c-b464-c80a33ef2f7a
+function registerUnitConversion(
+	unit1::Symbol, unit2::Symbol, unit1_TooT_unit2::Tuple{Function, Function})
+	# [1] means from unit1 to unit2
+	tableOfConversions[(unit1::Symbol, unit2::Symbol)] = unit1_TooT_unit2[1]::Function
+	# [2] means from unit2 to unit1
+    tableOfConversions[(unit2::Symbol, unit1::Symbol)] = unit1_TooT_unit2[2]::Function
+	tableOfConversions     # provide content of 'tableOfConversions' as feedback info
+end
+
+# ╔═╡ 8c9f15af-861b-4dff-8304-06b8e5c5d196
+tableOfConversions                                   # check content of look-up table
+
+# ╔═╡ a775baa8-3c11-46ba-9dd8-495bb2b3212e
+md"
+###### *storing* *bi*directional *functional* converters into the lookup-table; SDFF, 2021, p.51
+"
+
+# ╔═╡ 828d9e44-0c7e-497b-b706-db3123fcfab7
+# bijective identity (necessary in SDFF, 2021, p.49)
+registerUnitConversion(:mole, :mole, mole_TooT_mole) 
+
+# ╔═╡ 85b7e0d0-b2ac-413a-bc59-ef09d5d15e73
+# SDFF, 201, p.51
+registerUnitConversion(:fahrenheit, :celsius, fahrenheit_TooT_celsius) 
+
+# ╔═╡ 7808bb71-1826-4f64-a951-2323896ceb88
+registerUnitConversion(:celsius, :kelvin, celsius_TooT_kelvin)      # SDFF, 201, p.51
+
+# ╔═╡ 1caaf622-be9b-4a21-a265-9689daab4b2f
+registerUnitConversion(:inch, :meter, inch_TooT_meter)
+
+# ╔═╡ bed50096-51e3-4d8c-9136-349ef1c2970f
+registerUnitConversion(:pound, :newton, pound_TooT_newton)
+
+# ╔═╡ 7f82c338-5b4d-4330-bfc8-22b48bb80a49
+registerUnitConversion(:psi, :nsm, psi_TooT_nsm)
+
+# ╔═╡ d1c7fead-0d0b-4f78-be23-56917a378294
+# bijective identity (necessary in SDFF, 2021, p.49)
+registerUnitConversion(:cubicInch, :cubicMeter, cubicInch_TooT_cubicMeter) 
+
+# ╔═╡ 63448a95-1e49-4d8d-8fa6-1c84df6aa937
+# bijective identity (necessary in SDFF, 2021, p.49)
+registerUnitConversion(:cubicMeter, :cubicInch, cubicMeter_TooT_cubicInch) 
+
+# ╔═╡ a90573cf-8629-4cbb-90ec-8b2be15581ba
+md"
+###### *fetching* from the lookup-table with $$takeConverter$$ (= SDFF's $$make-converter$$)
+"
+
+# ╔═╡ ea917913-5fe6-4c81-9584-9eb29f2d65c4
+function makeConverter(unit1::Symbol, unit2::Symbol)::Function
+	tableOfConversions[(unit1, unit2)]::Function
+end
+
+# ╔═╡ 4ce3faab-59c6-4f97-80a9-52c3cdd00c3d
+function unitSpecializer(procedure, implicitOutputUnit, implicitInputUnits...)
+	#--------------------------------------------------------------------------------
+	function specializer(specificOutputUnit, specificInputUnits...)
+			# outputConverter == cubicMeter_To_cubicInch (taken from dictionary)
+		let outputConverter = makeConverter(implicitOutputUnit, specificOutputUnit),
+			# inputConverters = [nsm_To_psi, kelvin_To_fahrenheit, mole_To_mole]
+			inputConverters = map(makeConverter, specificInputUnits, implicitInputUnits) 
+			#-----------------------------------------------------------------------
+			function applySpecializedProcedure(arguments...)
+				outputConverter( # = cubicMeter_To_cubicInch
+					procedure(   # = gasLawVolume
+						map((converter, argument) -> converter(argument),
+							inputConverters, 
+							arguments)...))
+		        		# slurped -----^ into procedures's arg tuple 
+			end # applySpecializedProcedure
+			applySpecializedProcedure
+		end # let
+		#--------------------------------------------------------------------------
+	end # specializer
+	specializer
+	#--------------------------------------------------------------------------------
+end # unitSpecializer
+
+# ╔═╡ ef222728-0b22-4ac3-9c26-ba562870db18
+# SI-units: meter^3, newton/m^2 (=pascal), kelvin, mole
+unitSpecializer(                                # SDFF, 2021, p.49 'unit-spcializer'
+	gasLawVolume,                               # generic procedure
+	:cubicMeter,                                # SI-output-unit 'volume'
+	:nsm,                                       # SI-input-unit 'pressure' 
+	:kelvin,                                    # SI-input-unit 'temperature'
+	:mole)                                      # SI-input-unit 'amount'
+
+# ╔═╡ f6c01023-edff-40d0-8f18-3f48a5a6a406
+makeSpecializedGasLawVolume =
+	# SI-units: meter^3, newton/m^2 (=pascal), kelvin, mole
+	unitSpecializer(                            # SDFF, 2021, p.49 
+		gasLawVolume,                           # generic procedure
+		:cubicMeter,                            # SI-output-unit 'volume'
+		:nsm,                                   # SI-input-unit 'pressure' 
+		:kelvin,                                # SI-input-unit 'temperature'
+		:mole)                                  # SI-input-unit 'amount'
+
+# ╔═╡ 8ce513e4-cded-4f53-8613-bccb9e6facb7
+conventionalGasLawVolume =
+	# BRUS-units: inch^3, pound/m^2 (=psi), fahrenheit, mole
+	makeSpecializedGasLawVolume(                # SDFF, 2021, p.49 
+		:cubicInch,                             # BRUS-output-unit 'volume'
+		:psi,                                   # BRUS-input-unit 'pressure' 
+		:fahrenheit,                            # BRUS-input-unit 'temperature'
+		:mole)                                  # BRUS-input-unit 'amount'
+
+# ╔═╡ 8b3c0c88-486c-4168-9c5c-ea7f1886f8af
+conventionalGasLawVolume(14.7, 68, 1)
+
+# ╔═╡ 50ab2ca4-a4ca-42e3-82b7-4a85ee03eb0f
+sphereRadius(conventionalGasLawVolume(14.7, 68, 1)) # SDFF, 2021, p.49 
+
+# ╔═╡ e7caf613-7042-4fd6-ac96-95f2c01348cd
+function specializeGenericProcedure(procedure, genProc_Output, genProc_Inputs...)
+	#--------------------------------------------------------------------------------
+	function specializeSpecificProcedure(specProc_Output, specProc_Inputs...)
+		# outputConverter == cubicMeter_To_cubicInch (taken from dictionary)
+		outputConverter = makeConverter(genProc_Output, specProc_Output)
+		# inputConverters = [nsm_To_psi, kelvin_To_fahrenheit, mole_To_mole]
+		inputConverters = map(makeConverter, specProc_Inputs, genProc_Inputs) 
+		#--------------------------------------------------------------------------
+		function applySpecializedProcedure(arguments...)
+			outputConverter( # = cubicMeter_To_cubicInch
+				procedure(   # = gasLawVolume
+					map((converter, argument) -> converter(argument),
+					inputConverters,
+					arguments)...)
+		        # slurped -----^ into procedures's arg tuple 
+			)
+		end #  
+		applySpecializedProcedure # specialized_Brit_US_unit_GasLawVolume
+		#--------------------------------------------------------------------------
+	end # specializeSpecificProcedure
+	#--------------------------------------------------------------------------------
+end # specializeGenericProcedure
+
+# ╔═╡ abc64a2c-45ca-4173-9759-fef56992a433
+# SI-units: meter^3, newton/m^2 (=pascal), kelvin, mole
+# in SDFF, 2021, p.49
+specializedGenericProcedure =                   # is 'makeSpecializedGasLawVolume'
+	#     ^------------------------------------ # 'd'
+	specializeGenericProcedure(                 # is 'unitSpecializer'
+		gasLawVolume,                           # generic procedure
+		:cubicMeter,                            # SI-output-unit 'volume'
+		:nsm,                                   # SI-input-unit 'pressure'
+		:kelvin,                                # SI-input-unit 'temperature'
+		:mole)                                  # SI-input-unit 'amount'
+
+# ╔═╡ 480ec17c-6b74-4122-a7a2-56d3d1a4b467
+# BRUS = BRitish imperial and US customary system: inch^3, pound/inch^2, fahrenheit
+# in SDFF, 2021, p.49
+specializedSpecificProcedure =                  # is 'conventional-gas-law-volume'
+	#     ^------------------------------------ # 'd'
+	specializedGenericProcedure(                # 'makeSpecializedGasLawVolume'
+		#     ^-------------------------------- # 'd'
+		:cubicInch,                             # BRUS-output-unit 'volume'
+		:psi,                                   # BRUS-input-unit 'pressure'
+		:fahrenheit,                            # BRUS-input-unit 'temperature'
+		:mole)                                  # BRUS-input-unit 'amount'
+
+# ╔═╡ 69490305-751b-4218-8728-2c90046bcd10
+specializedSpecificProcedure         # SDFF, 2021, p.49: 'conventional-gas-law-volume'
+
+# ╔═╡ 0036016c-9d76-4a22-890d-5b47cadcd8e8
+# SDFF, 2021, p.49: 'conventional-gas-law-volume'
+specializedSpecificProcedure(14.7, 68, 1)        
+
+# ╔═╡ fdc90ae7-352b-43f3-a517-4efe86cf4693
+# SDFF, 2021, p.49: 'conventional-gas-law-volume'
+sphereRadius(specializedSpecificProcedure(14.7, 68, 1))
+
+# ╔═╡ bdbe6e76-3e4e-4e7a-9e7e-d6507077fb31
+specializeGenericProcedure(gasLawVolume, :cubicMeter, :nsm, :kelvin, :mole)(:cubicInch, :psi, :fahrenheit, :mole)(14.7, 68, 1)
+
+# ╔═╡ 92d8ecd6-f104-4251-b588-cf3ad1f52a01
+sphereRadius(specializeGenericProcedure(gasLawVolume, :cubicMeter, :nsm, :kelvin, :mole)(:cubicInch, :psi, :fahrenheit, :mole)(14.7, 68, 1)) # SDFF, 2021, p.49
+
+# ╔═╡ 70c8e824-4fe5-4c48-9f24-c24241478234
+md"
+###### Fahrenheit <--> Celsius
+"
+
+# ╔═╡ 77a67d50-87c2-402d-a910-cdd71f43c420
+makeConverter(:fahrenheit, :celsius)                  # SDFF, 2021, p.47
+
+# ╔═╡ 524ce1a7-a875-4030-b55e-00c04ce310d0
+makeConverter(:fahrenheit, :celsius)(-40)             # SDFF, 2021, p.47
+
+# ╔═╡ da19004d-eaa0-4231-ac17-7b529bd8a36a
+makeConverter(:fahrenheit, :celsius)(32)              # SDFF, 2021, p.47
+
+# ╔═╡ 4438e8e9-52f7-4a38-bf89-b261ca762f8e
+makeConverter(:celsius, :fahrenheit)(0)
+
+# ╔═╡ 03304ff9-3452-4bc6-86dd-0f772f4e68e8
+md"
+###### Celsius <--> Kelvin
+"
+
+# ╔═╡ b9c1f01d-75ca-46e0-a5d9-01854e3b6c8a
+makeConverter(:celsius, :kelvin)(0) 
+
+# ╔═╡ 27a545c0-12b1-4c65-b53e-f11c5b4c612e
+makeConverter(:kelvin, :celsius)(300) 
+
+# ╔═╡ 8d3d94c1-05a3-48da-aaab-b3b7235d2074
+md"
+###### Inch <--> Meter
+"
+
+# ╔═╡ 23b9c0e0-cc75-49f4-9f13-3e2691e8626d
+makeConverter(:inch, :meter)(39.37)
+
+# ╔═╡ cc80ec3d-4d9d-42a8-8f19-7d83e3d4a592
+makeConverter(:meter, :inch)(1)
+
+# ╔═╡ 3c9a7062-8dd1-44e2-bda6-bedaf6a01d5f
+md"
+###### [Psi <--> Nsm](https://www.unitconverters.net/pressure/psi-to-newton-square-meter.htm)
+"
+
+# ╔═╡ 6573ff9b-66c0-4b86-926a-4ff091365079
+makeConverter(:psi, :nsm)(1)
+
+# ╔═╡ fb8c66bc-93a6-42b0-b402-7768dba65a58
+makeConverter(:nsm, :psi)(1)
+
+# ╔═╡ 15f9ee3f-6926-41d7-8386-0e4ceaf95ed3
+tableOfConversions
+
+# ╔═╡ 3082ec1c-a0bd-4545-979b-6f71a4804b63
+md"
+##### '*algebra*' of unit conversions, SDFF, 202, p.51
+"
+
+# ╔═╡ fd8c6191-119d-4045-9c22-793e08e6c8ce
+md"
+###### function $$unitInvert: unit1\_TooT\_unit2 \mapsto unit2\_TooT\_unit1$$ (SDFF, 2021, p.49)
+"
+
+# ╔═╡ f7a7e97d-bacc-4635-bce1-efe081e8406d
+function unitInvert(                         # SDFF, 2021, p.49
+	unit1_TooT_unit2::Tuple{Function, Function})::Tuple{Function, Function}      
+	makeUnitConversion(unit1_TooT_unit2[2], unit1_TooT_unit2[1]) 
+end                                       
+
+# ╔═╡ b13654e1-b8bf-4a6e-9bf6-0a899e3b46c5
+unitInvert(inch_TooT_meter)[1] == inch_TooT_meter[2] == m_To_in    # identity ?!
+
+# ╔═╡ 6e46bdb5-d745-4c61-bfe6-7a746577fb5a
+unitInvert(inch_TooT_meter)[1](              # SDFF, 2021, p.48
+	(sphereRadius(
+		gasLawVolume(
+			psi_To_nsm(14.7), 
+			compose(c_To_k, f_To_c)(68),     # <== compose(...)
+			mole_To_mole(1)))))
+
+# ╔═╡ e0742ca7-1a76-4f1d-b6ad-e5f96acd4555
+unitInvert(inch_TooT_meter)[1](              # SDFF, 2021, p.48
+	(sphereRadius(
+		gasLawVolume(
+			psi_To_nsm(14.7), 
+			(c_To_k ∘ f_To_c)(68),           # <== '∘'
+			mole_To_mole(1)))))
+
+# ╔═╡ 8d3b53d9-73df-4a1c-bdcd-355d5b641187
+# SDFF, 2021, p.48
+(unitInvert(inch_TooT_meter)[1] ∘ (sphereRadius ∘ gasLawVolume))(
+	psi_To_nsm(14.7),   
+	(c_To_k ∘ f_To_c)(68), 
+	mole_To_mole(1))
+
+# ╔═╡ a61e4ffa-05a7-4293-bfaa-160d06e08a94
+gasLawVolume(                                # SDFF, 2021, p.48
+	14.7 |> psi_To_nsm, 
+	68 |> f_To_c |> c_To_k, 
+	mole_To_mole(1)) |> sphereRadius |> unitInvert(inch_TooT_meter)[1]
+
+# ╔═╡ f3f10945-1779-415e-a3e5-80e7d8ec4bdf
+typeof(unitInvert(celsius_TooT_kelvin)) <: Tuple{Function, Function} 
+
+# ╔═╡ 40bf2326-19d4-4284-9c00-43128155b14b
+unitInvert(celsius_TooT_kelvin)[1](1)         # 1 Kelvin to -272 Celsius
+
+# ╔═╡ 85e5c46b-5c5c-4314-bdf5-db2e5fa70664
+unitInvert(celsius_TooT_kelvin)[2](1)         # 1 Grad Celsius --> 274 Kelvin
+
+# ╔═╡ 24c4b58c-03cc-455b-8d04-edadda214453
+fahrenheit_TooT_celsius[1](32)                # SDFF, 2021, p.47
+
+# ╔═╡ 2924c20d-d124-44b4-a48e-34befe16377d
+fahrenheit_TooT_celsius[2](20)                # SDFF, 2021, p.47
+
+# ╔═╡ f642527b-d422-4fe2-aac3-fb90262639bb
+unitInvert(fahrenheit_TooT_celsius)[1](20)    # SDFF, 2021, p.47
+
+# ╔═╡ d825e500-66c9-43b7-b38d-f82b77c1911f
+fahrenheit_TooT_celsius[2] === unitInvert(fahrenheit_TooT_celsius)[1] # identity ?
+
+# ╔═╡ c47ddd31-d4af-4bf4-b186-47ad2f16448b
+md"
+###### function $$unitMult$$ (SDFF, 2021, p.51)
+"
+
+# ╔═╡ 6e5545d0-6219-4bca-b305-33682e6c139b
+# returns a 2-tuple; elements should be adressed with indices (...)[1] or (...)[2]
+function unitMult(                                             # u1 <--> u2
+	unit1_TooT_unit2::Tuple{Function, Function})::Tuple{Function, Function}
+	makeUnitConversion(unit1_TooT_unit2[1], unit1_TooT_unit2[2])::Tuple{Function, Function} 
+end
+
+# ╔═╡ 1eb05299-f429-4b62-a9e0-c75287a147f6
+# returns a 2-tuple; elements should be adressed with indices (...)[1] or (...)[2]
+function unitMult(                                             # u1 <--> u3
+	unit1_TooT_unit2::Tuple{Function, Function}, 
+	unit2_TooT_unit3::Tuple{Function, Function})::Tuple{Function, Function}           
+	 makeUnitConversion(           
+		compose(unit2_TooT_unit3[1], unit1_TooT_unit2[1]),     
+		compose(unit1_TooT_unit2[2], unit2_TooT_unit3[2]))::Tuple{Function, Function}
+end
+
+# ╔═╡ 7fa68a49-0acc-45b6-861e-425aa269f9c0
+inch_TooT_meter
+
+# ╔═╡ fd33e090-c6bf-4287-b436-e291e4522750
+typeof(inch_TooT_meter) <: Tuple{Function, Function}
+
+# ╔═╡ ec1d79be-e51e-4d3d-8522-73868aa3740d
+typeof(inch_TooT_meter[1]) <: Function
+
+# ╔═╡ 0d523c6b-46bd-4b16-a149-b16413d89ac8
+typeof(inch_TooT_meter[2]) <: Function
+
+# ╔═╡ c6c5d6c1-ce0f-4b3b-9390-27b4d1bdae18
+makeUnitConversion(inch_TooT_meter[1], inch_TooT_meter[2])
+
+# ╔═╡ a963d978-2fe4-4f01-94ff-95b2d5073607
+typeof(makeUnitConversion(
+	inch_TooT_meter[1], 
+	inch_TooT_meter[2])) <: Tuple{Function, Function}
+
+# ╔═╡ 91ac24b7-6fdd-4e98-af9a-652c8bd2c0f6
+unitMult(inch_TooT_meter)
+
+# ╔═╡ 495cd078-a889-49d4-813e-cfaae056af48
+unitMult(inch_TooT_meter)[1](1)
+
+# ╔═╡ 348923cc-0534-4d4f-a434-49ae1a5cfe73
+unitMult(inch_TooT_meter)[2](1)
+
+# ╔═╡ 519d4701-30a5-4cce-a065-97732ec4315e
+unitMult(inch_TooT_meter, inch_TooT_meter)[1](1) # 1^2 in^2 --> 0.000645 m^2=6.45 cm^2
+
+# ╔═╡ 109ff637-916a-44a0-aad1-1dbe7f99baaa
+unitMult(inch_TooT_meter, inch_TooT_meter)[2](1) # 1^2 m^2 --> 1550 in^2
+
+# ╔═╡ ec61b673-5ea8-408f-ab16-ccf9d795119b
+md"
+###### function $$unitExpt$$ (SDFF, 2021, p.51)
+"
+
+# ╔═╡ 09de51b7-eb51-4d49-872e-8305c89565cc
+function unitExpt(
+	unit1_TooT_unit2::Tuple{Function, Function}, n::Signed)::Tuple{Function, Function} 
+	if n == 1  
+		unitMult(unit1_TooT_unit2)::Tuple{Function, Function} 
+	else
+		unitMult(unit1_TooT_unit2, unitExpt(unit1_TooT_unit2, n-1))::Tuple{Function, Function} 
+	end # if
+end
+
+# ╔═╡ 68e6ea4a-0073-40d1-8a8e-32007f58db39
+inch_TooT_meter[1](1)
+
+# ╔═╡ d8eff01d-df5c-410c-8457-7e71761034e2
+unitExpt(inch_TooT_meter, 1)::Tuple{Function, Function} 
+
+# ╔═╡ e1497e1b-2f63-4bd9-9956-996bfdb1650a
+unitExpt(inch_TooT_meter, 1)[1]::Function
+
+# ╔═╡ 90fdba7c-c09e-4d80-981b-798176db1f9c
+unitExpt(inch_TooT_meter, 1)[1](1)                             # 1 in --> 0.0254 m
+
+# ╔═╡ 1eb74902-e541-4fe0-a0b3-a3d8c659eed5
+inch_TooT_meter[2](1)                                          # 1 m --> 39.37 in
+
+# ╔═╡ c8470dac-de51-4b3b-bbde-59da00956eb7
+unitExpt(inch_TooT_meter, 1)[2](1)                             # 1 m --> 39.37 in  
+
+# ╔═╡ 95d21544-e9c4-4954-b21b-7a3123e7e18f
+md"
+###### $$in^2 \leftrightarrow m^2$$ (SDFF, 2021, p.51)
+"
+
+# ╔═╡ 251a14d2-5449-47cc-9fe2-5a070773d41e
+insq_TooT_msq::Tuple{Function, Function} = 
+	unitExpt(inch_TooT_meter, 2)::Tuple{Function, Function}
+
+# ╔═╡ 39ee9b48-f51d-417a-8fe2-7ca2188af419
+typeof(insq_TooT_msq) <: Tuple{Function, Function}
+
+# ╔═╡ 3d6adfa6-e79d-40c5-b26f-3230fe00727e
+unitExpt(inch_TooT_meter, 2)[1]             
+
+# ╔═╡ 6beade54-ee2b-4b29-b0af-83b077144579
+unitExpt(inch_TooT_meter, 2)[1](1)       # 1^2 in^2 --> 0.0254^2 m^2 = 0.0006452 m
+
+# ╔═╡ bead17ad-6491-4afa-9560-117242155917
+unitExpt(inch_TooT_meter, 2)[2](1)       # 1^2 m^2 --> 39.37^2 in^2 -- 1550 in^2 
+
+# ╔═╡ 19cf5c05-9e42-44a3-8bee-6b99ab2626c6
+md"
+###### $$in^3 \leftrightarrow m^3$$ (SDFF, 2021, p.51)
+"
+
+# ╔═╡ 119c4492-0ebc-464d-aa64-1dfc16389f5f
+unitExpt(inch_TooT_meter, 3)
+
+# ╔═╡ 8dd038f7-6ea8-462a-94bd-892df87d894f
+unitExpt(inch_TooT_meter, 3)[1](1)       # 1^3 in^3 --> 0.0254^3 m^ = 0.000016387 m^3
+
+# ╔═╡ c62ebfe3-8c95-4f32-9c47-ed03c2213821
+unitExpt(inch_TooT_meter, 3)[2](1)       # 1^3 m^3 --> 39.37^3 in^3 --> 61023.38 in^3 
+
+# ╔═╡ 65dcf819-0711-4ea7-abf4-99f782036d0b
+function unitDiv(                        # SDFF, 2021, p.51
+	unit2_TooT_unit3::Tuple{Function, Function}, 
+	unit1_TooT_unit2)::Tuple{Function, Function}
+	unitMult(unit2_TooT_unit3, unitInvert(unit1_TooT_unit2))::Tuple{Function, Function}
+end
+
+# ╔═╡ 64f4f513-81ea-4828-ac34-62d96f49f1e6
+md"
+###### PSI --> NSM (SDFF, 2021, p.51, p.48)
+"
+
+# ╔═╡ 4b65d48b-408f-4de1-b393-11a870f5a9e2
+typeof(unitDiv(pound_TooT_newton, unitExpt(inch_TooT_meter, 2))) <: Tuple{Function, Function}
+
+# ╔═╡ 164d1acd-f612-432a-a5b2-0eb3167a6945
+typeof(unitDiv(pound_TooT_newton, unitExpt(inch_TooT_meter, 2))[1]) <: Function
+
+# ╔═╡ 96fcce97-dec2-43a1-b9ec-7597b2c22a63
+# 1 psi = 6894.72 nsm
+unitDiv(pound_TooT_newton, unitExpt(inch_TooT_meter, 2))[1](1)      # SDFF, 2021, p.51
+
+# ╔═╡ 5cf55486-e993-46c4-bf86-0ebf13a07e3d
+registerUnitConversion(
+	:psi2,  # alternative version of psi, equivalent to '(/ pound (expt inch 2))'
+	:nsm2,  # alternative version of nsm, equivalent to '(/ newton (expt meter 2))'
+	unitDiv(pound_TooT_newton, unitExpt(inch_TooT_meter, 2)))
+
+# ╔═╡ 05e134aa-3857-4636-a6da-e31d78010b82
+tableOfConversions                             # display content of look-table
+
+# ╔═╡ 9ba95723-49a1-4a09-b586-08c53dcd0f55
+md"
+###### [Fahrenheit <--> Kelvin](https://www.rapidtables.com/convert/temperature/fahrenheit-to-kelvin.html) (SDFF, 2021, p.51)
+"
+
+# ╔═╡ 557930d9-77f9-4662-93f8-f7f66a52b2fa
+compose(celsius_TooT_kelvin[1], fahrenheit_TooT_celsius[1]) # Fahrenheit --> Kelvin
+
+# ╔═╡ 89e8aa64-97d2-4f60-9991-d3fbc0ea7ea2
+# 1 Fahrenheit --> 256 Kelvin
+compose(celsius_TooT_kelvin[1], fahrenheit_TooT_celsius[1])(1) 
+
+# ╔═╡ 1642fa60-04b8-4bc5-a390-e6319bd56a9e
+# 1 Fahrenheit --> 256 Kelvin
+1 |> fahrenheit_TooT_celsius[1] |> celsius_TooT_kelvin[1] 
+
+# ╔═╡ 153d882d-82a2-4e96-9b57-c7d80720ed4b
+# 1 Kelvin --> -457 Fahrenheit
+compose(fahrenheit_TooT_celsius[2], celsius_TooT_kelvin[2])(1) 
+
+# ╔═╡ da97b199-6d56-497e-9229-a43b64e02208
+# 1 Kelvin --> -458 Fahrenheit
+1 |> celsius_TooT_kelvin[2] |>  fahrenheit_TooT_celsius[2]     
+
+# ╔═╡ b33d2fc4-40fa-4c7e-85b1-2f65ecc54ba9
+# 1 Fahrenheit --> 256 Kelvin
+makeUnitConversion(                               
+	compose(celsius_TooT_kelvin[1],     fahrenheit_TooT_celsius[1]),
+	compose(fahrenheit_TooT_celsius[2], celsius_TooT_kelvin[2])
+)[1](1)
+
+# ╔═╡ 350877ce-d49d-4971-b801-7c4a5431d53a
+# 1 Kelvin --> -458 Fahrenheit
+makeUnitConversion(                                    
+	compose(celsius_TooT_kelvin[1],     fahrenheit_TooT_celsius[1]),
+	compose(fahrenheit_TooT_celsius[2], celsius_TooT_kelvin[2])
+)[2](1)
+
+# ╔═╡ 8476099d-cfb1-422b-9a0c-ab553b84c082
+# bijective function Fahrenheit <--> Kelvin; SDFF, 2021, p.51
+fahrenheit_TooT_kelvin::Tuple{Function, Function} = 
+	unitMult(fahrenheit_TooT_celsius, celsius_TooT_kelvin)::Tuple{Function, Function}
+
+# ╔═╡ 9b3eda73-f644-479b-8e8e-c826b4acd551
+fahrenheit_TooT_kelvin[1]
+
+# ╔═╡ bc79f4bb-cdcc-4b6c-8436-f46463250883
+fahrenheit_TooT_kelvin[1](1)                  # 1 fahrenheit |--> 255.93 kelvin
+
+# ╔═╡ c4626150-b00c-490a-acbe-0afbcd98ed94
+fahrenheit_TooT_kelvin[1](68)
+
+# ╔═╡ f4ff038e-b2ae-45d7-95e8-9e6a7ee07bf4
+# cubicMe_To_cubicIn: Meter^3 --> Inch^3
+# gasLawVolume: Pascal X Kelvin X Mole --> Meter^3                # SDFF, 2021, p.48 
+# NSM (= Newton Square Meter = SI-PASCAL)
+cubicMeter_To_cubicInch(
+	gasLawVolume(
+		psi_To_nsm(14.7), fahrenheit_TooT_kelvin[1](68), mole_To_mole(1)))
+
+# ╔═╡ 24df49a5-52c3-46bd-b114-2525a8e36ebe
+m_To_in(                                     # SDFF, 2021, p.48
+	(sphereRadius(
+		gasLawVolume(
+			psi_To_nsm(14.7), 
+			fahrenheit_TooT_kelvin[1](68),
+			mole_To_mole(1)))))
+
+# ╔═╡ 2001c161-52c9-40ac-b46b-d611e7bb04aa
+unitInvert(inch_TooT_meter)[1](              # SDFF, 2021, p.48
+	(sphereRadius(
+		gasLawVolume(
+			psi_To_nsm(14.7), 
+			fahrenheit_TooT_kelvin[1](68),   # <== fahrenheit_TooT_kelvin[1]
+			mole_To_mole(1)))))
+
+# ╔═╡ bc489e47-1803-4ffb-b271-82a19f9657b8
+# 1 Fahrenheit --> 256 Kelvin
+fahrenheit_TooT_kelvin[1](1)                               
+
+# ╔═╡ 70227db2-677d-4cc9-b93f-f7c52b3eae41
+ # 1 Kelvin --> -458 Fahrenheit
+fahrenheit_TooT_kelvin[2](1)                              
+
+# ╔═╡ f057dd7e-05be-402b-9dd8-fc85bdf879f4
+unitMult(fahrenheit_TooT_celsius, celsius_TooT_kelvin)[1]   # Fahrenheit --> Kelvin
+
+# ╔═╡ 9969d915-b989-433d-80de-f0fdcf515472
+# 1 Fahrenheit --> 256 Kelvin
+unitMult(fahrenheit_TooT_celsius, celsius_TooT_kelvin)[1](1) 
+
+# ╔═╡ 83779b35-61bb-4a9b-aa09-8db5f55ab45f
+unitMult(fahrenheit_TooT_celsius, celsius_TooT_kelvin)[2]   # Kelvin --> Fahrenheit
+
+# ╔═╡ 4b9c03c4-eb09-41e0-b1ba-7bdcdb2dc103
+ # 1 Kelvin --> -458 Fahrenheit
+unitMult(fahrenheit_TooT_celsius, celsius_TooT_kelvin)[2](1)  
+
+# ╔═╡ 914e624e-b22f-445d-aaa6-d7b751206e95
+md"
+###### *storing* bijective *2-tuple* converters into the lookup-table; SDFF, 2021, p.51
+"
+
+# ╔═╡ 5124f147-7a35-47a9-ad92-0393727ac754
+registerUnitConversion(:fahrenheit, :kelvin, fahrenheit_TooT_kelvin)
+
+# ╔═╡ 1582ec32-5ebe-48d8-a2bf-b1c8d88a7310
+# SDFF, 2021, p.51
+registerUnitConversion(:cubicInch, :cubicMeter, unitExpt(inch_TooT_meter, 3))
+
+# ╔═╡ 1342f411-b2cd-4f17-91cc-2988c6a8efab
+tableOfConversions
+
+# ╔═╡ cf71d33a-7868-464d-b8d4-9fad0071961c
+md"
+====================================================================================
+
+This is a **draft** under the Attribution-NonCommercial-ShareAlike 4.0 International **(CC BY-NC-SA 4.0)** license. Comments, improvement and issue reports are welcome: **claus.moebus(@)uol.de**
+
+===================================================================================
+
+"
+
+# ╔═╡ 00000000-0000-0000-0000-000000000001
+PLUTO_PROJECT_TOML_CONTENTS = """
+[deps]
+"""
+
+# ╔═╡ 00000000-0000-0000-0000-000000000002
+PLUTO_MANIFEST_TOML_CONTENTS = """
+# This file is machine-generated - editing it directly is not advised
+
+julia_version = "1.10.5"
+manifest_format = "2.0"
+project_hash = "da39a3ee5e6b4b0d3255bfef95601890afd80709"
+
+[deps]
+"""
+
+# ╔═╡ Cell order:
+# ╟─a75bd7c0-e0d6-11ec-0851-91219ae8324d
+# ╟─cc6d0f3a-307e-40bd-a59e-5dabd60673b3
+# ╠═04d5b061-baa6-48f7-9efd-d6159814275a
+# ╠═158439ef-714e-41e1-b4b2-2efb916ca620
+# ╟─421dc004-137d-4d35-bace-d467fb9534f8
+# ╟─3b9befa2-f585-4d3f-86c9-9ad486a6c074
+# ╠═490cda21-c361-43e2-becd-f5a0e9485595
+# ╠═054956d6-f3a4-45d8-ad0d-b4ddd92df08b
+# ╠═14e15d65-453b-47f3-85b6-0a44c9540e4d
+# ╟─066011db-a193-4639-b451-f3365198eb94
+# ╠═9b3eda73-f644-479b-8e8e-c826b4acd551
+# ╠═bc79f4bb-cdcc-4b6c-8436-f46463250883
+# ╠═c4626150-b00c-490a-acbe-0afbcd98ed94
+# ╟─9c15144b-e2ad-43b0-9895-9b2dcd144eca
+# ╠═81ac756f-eb4a-4744-b55a-ea6d14cfe5b0
+# ╠═ca520b24-1be9-4c9c-a4b4-4c26cff60358
+# ╠═9c0f4810-d748-4a86-b711-98d5f97ff983
+# ╟─d8028160-7803-43c7-9416-20cb93045428
+# ╠═f4ff038e-b2ae-45d7-95e8-9e6a7ee07bf4
+# ╟─63f72c15-3840-4f84-9e0a-a03f95dcfb3f
+# ╠═92f23503-f058-453d-8ea1-d320f7a396ad
+# ╟─35ca77a7-fcd2-4fa7-8e48-20798007e43c
+# ╠═8d58edd4-66d6-4e0d-8708-cc34b1aa5566
+# ╠═a9fe3c3d-b674-4027-aca2-9cb2d0730173
+# ╠═3d2d821b-3a0b-4085-9cd6-c1594117c6bb
+# ╠═c0ad93d9-a1cc-451a-b5b8-4c135ecf3b3e
+# ╠═908e8a01-497e-4864-adde-f9896b3e103b
+# ╠═98f5faad-5562-4df3-8abb-abb62ffcf85d
+# ╠═d127a328-b056-48e5-8004-c3c200e44515
+# ╟─f8c2400b-e738-4b04-af49-56dd93b58d36
+# ╠═3cd05702-1b2a-4ccf-9a00-462d07254b6b
+# ╟─31c51f31-9571-4a8b-8a90-49aff9692f53
+# ╠═5390f189-daaf-4cce-9f0e-0de26ff56363
+# ╠═7bd1a48b-b5f2-4c48-99f5-e9c869d48147
+# ╠═57e12d95-e8f7-4f35-a1bb-3e718ed0add8
+# ╟─f114f3ab-086c-44af-a934-fb22139c0b6f
+# ╠═042ce057-5b67-4130-99ee-eaffc5bddb42
+# ╠═851bd824-cee3-4cac-ab9a-836948855fc7
+# ╠═a01d3a32-3930-4cc7-a50a-5c5701ad6b44
+# ╠═0aea15bf-0beb-481c-a510-1d40eaf70860
+# ╠═61587052-1ccc-435e-a3dd-8ba25b48f3d1
+# ╠═b549ae09-47e5-464f-bae3-ca209ce8a374
+# ╠═8b86058b-dd3c-4147-b149-875f4e86c844
+# ╠═4651f613-958b-4766-8313-c8239c6792dd
+# ╠═7c68efd4-30c3-4a63-b1ae-f872d2c51ffc
+# ╠═eda99383-24bf-4508-a6e7-f6d2e6ad9d67
+# ╠═6876efd3-f069-46c9-a4bb-0c6a104c79c4
+# ╠═b5a5d188-6701-4fea-9702-686060f98144
+# ╠═d335c7af-32e9-48ed-8b1c-0d22dd486884
+# ╠═10e0f5ac-d96b-4f11-8827-cc942f5149a3
+# ╠═057a4dfd-5905-4185-a8d6-11a7772f987d
+# ╠═2a883483-a0e5-496f-b358-7675d0e204dd
+# ╠═259aee79-dd8a-468d-b609-08013bd33744
+# ╠═45d3a216-e014-462c-9a59-d03a1013992f
+# ╠═8fe70274-7356-44cf-909e-9c329f28759b
+# ╟─2d9d0820-2590-4822-9b94-47e5f7c71349
+# ╠═6d2e1d8d-32ab-4a93-9a6e-33baa7e4486f
+# ╠═e8fcd3e8-23ff-419f-9948-6c2baa6378cd
+# ╠═c18bd9dc-e3cb-4279-a7bf-98ce12e1cf87
+# ╠═04623fc5-0dc5-41c2-8d33-9e7605adf20f
+# ╠═1471641b-5360-405b-8b83-3773d9d519e7
+# ╠═29e2ca91-432b-47aa-b69c-e22f4530cab0
+# ╠═885f9a1d-2206-49a1-8095-af5bab5d25e1
+# ╟─a4e7644a-fb37-47af-a6c4-d2dd3d46d5d5
+# ╠═22104f35-75f7-4a84-bf1f-e8949f450327
+# ╠═7115c988-b3a2-4dc2-9ec8-a53d8faffe2b
+# ╠═bbb1f8a5-81e7-443d-ac59-86ef968b94b5
+# ╠═3999ca88-cda6-4aa3-9ca7-4eeb3ea066ba
+# ╠═38a66a6a-5250-4076-8711-f6fca68da2ee
+# ╠═86364d23-30a2-477c-9881-8ee8e55a39d4
+# ╠═815edd40-c718-4c46-9490-52857ce65c42
+# ╠═36c47b37-7808-49e4-a95c-959471ea62fd
+# ╟─4eb5fdc7-4dbb-40c2-813c-7d698f1572e9
+# ╟─e49ff440-143b-4e77-ab30-9ee0a4f685bf
+# ╠═05c9549e-33d6-4661-b5af-127a6ec3df28
+# ╠═d75549ab-3671-495a-bb82-cc606c387997
+# ╠═e2f94f73-575c-4f15-b3af-a68cda1e7d77
+# ╠═50f3b224-6352-4160-a62f-e6d71389df8c
+# ╠═1327b31f-e729-4667-a6e4-2d237209ac25
+# ╟─118f779c-509f-4b52-bbcb-a8659fe3f94a
+# ╟─0cc90027-c5dc-4e3f-825d-705a5eefcc08
+# ╟─b7ff1550-56f9-4f67-b8ab-42f4933165ff
+# ╠═18b57371-6545-4ad1-aa44-3a0d497f53f4
+# ╠═0b453ab6-1a55-4e24-875b-38619f9ea260
+# ╠═640998dc-380e-4acb-9bdc-c137b9cfd2ef
+# ╠═c2849be0-d4ef-47a4-a515-bddec91515c7
+# ╟─81e863e0-50b4-4996-9b7e-d0e8b5a60762
+# ╠═0b197d24-47df-43fb-a814-8597b0b87d3e
+# ╠═48c0f361-ed2a-46da-b623-d740c459601d
+# ╠═b04c3412-1980-4a91-ab50-e1ae3a8aff07
+# ╟─608bc838-0532-412b-b157-65ce1faab3c9
+# ╠═0173f9c9-e2fe-4e4a-9664-c770ec407bfa
+# ╠═a00b5001-4d5b-4a56-8767-69beccc1e8f0
+# ╟─5f67a91f-93d7-4654-a786-b8f2d572d262
+# ╟─362e51ef-6614-4db6-a101-b044a8a93cf7
+# ╠═24df49a5-52c3-46bd-b114-2525a8e36ebe
+# ╠═b13654e1-b8bf-4a6e-9bf6-0a899e3b46c5
+# ╠═2001c161-52c9-40ac-b46b-d611e7bb04aa
+# ╠═6e46bdb5-d745-4c61-bfe6-7a746577fb5a
+# ╠═e0742ca7-1a76-4f1d-b6ad-e5f96acd4555
+# ╟─fd47b052-db8c-42d8-b319-b9c13710d693
+# ╠═8d3b53d9-73df-4a1c-bdcd-355d5b641187
+# ╟─a6343d9f-1867-4c14-84c4-e472fd6ac6bb
+# ╠═a61e4ffa-05a7-4293-bfaa-160d06e08a94
+# ╟─c269985e-2e8d-41ff-bd7f-f470d5daa9fa
+# ╟─eabc5523-6858-45d5-a78a-e8e5d872c6e0
+# ╠═ef222728-0b22-4ac3-9c26-ba562870db18
+# ╠═f6c01023-edff-40d0-8f18-3f48a5a6a406
+# ╠═8ce513e4-cded-4f53-8613-bccb9e6facb7
+# ╠═8b3c0c88-486c-4168-9c5c-ea7f1886f8af
+# ╠═50ab2ca4-a4ca-42e3-82b7-4a85ee03eb0f
+# ╟─c07fed73-d9b2-41ea-892d-291d0e72835a
+# ╟─4e12ba69-eadf-484b-a2f7-993ae075f2a9
+# ╟─fe54735a-64e2-4b0f-8cda-fb414f6c99ab
+# ╠═abc64a2c-45ca-4173-9759-fef56992a433
+# ╠═480ec17c-6b74-4122-a7a2-56d3d1a4b467
+# ╠═bdbe6e76-3e4e-4e7a-9e7e-d6507077fb31
+# ╠═92d8ecd6-f104-4251-b588-cf3ad1f52a01
+# ╠═69490305-751b-4218-8728-2c90046bcd10
+# ╠═0036016c-9d76-4a22-890d-5b47cadcd8e8
+# ╠═fdc90ae7-352b-43f3-a517-4efe86cf4693
+# ╟─32f2fe70-0beb-40db-8d6d-81c83ee72cc2
+# ╠═034ba155-c61c-4b29-9067-28cf275ecad6
+# ╠═4ce3faab-59c6-4f97-80a9-52c3cdd00c3d
+# ╟─e47735c9-13ac-4f9e-8bfc-21bf83b584a8
+# ╟─e65f0d59-605d-405b-9f91-c05e3251eb99
+# ╠═e7caf613-7042-4fd6-ac96-95f2c01348cd
+# ╟─e1e9f9aa-4513-4348-9975-2594e0c83c4f
+# ╟─884dd73d-d051-41ae-b9ac-85bd3f3de498
+# ╠═930c399e-b111-4b8c-8ed8-1fcb530badd4
+# ╠═86f80bed-0737-412d-866f-304de180aafd
+# ╠═f4df07b8-a0c3-4fb2-b9b9-3f5aa3e96e73
+# ╠═b4828813-5876-438a-908e-5df449811a83
+# ╠═1975af30-06e5-49a2-baa8-9b32b3a04be8
+# ╠═b84a542a-7b37-4dae-87e6-ce18df6f74bb
+# ╠═ac437878-63e8-41a7-bb75-b571f715ed28
+# ╠═f7795722-0c3c-4a01-b98d-837cff07ab7f
+# ╟─94ca314a-533b-4226-b368-bbe967e9921f
+# ╠═ea6bec56-c4a6-4c15-ab9a-bbf990aab1d0
+# ╠═801418f6-d832-4844-b552-e00ce1349a10
+# ╠═d5d459ce-e026-440d-a7db-6dc6cad51476
+# ╠═59dc2962-cd78-43da-b0da-6c1fe3863cef
+# ╠═687bf314-65e8-4113-af0b-5171bd84898a
+# ╠═8a071b76-3c87-47bd-9157-5c13f797089a
+# ╠═07ab67cc-bf1a-49ac-bdf0-969b0ea9f7f5
+# ╠═bdec9181-5547-4121-81a6-56127210289a
+# ╠═f9eeb23a-c753-420f-bbb2-41efc32bf90f
+# ╠═649fe77f-72df-4b6b-b9b6-2a6aac830cde
+# ╟─d1bfe4f8-9f78-47a5-99b9-1dbffd9a34d9
+# ╠═cadc72ec-8f02-489f-9e21-e272d2acdb49
+# ╠═bf258554-9d63-40be-8687-fbe64d3cd7e8
+# ╠═94c57c95-e032-4f73-80a4-1bc81e046eda
+# ╠═d3900531-9dcc-46d1-88d9-41b1223ce74c
+# ╠═26446e02-54cd-4d49-8769-c66bdfd92e63
+# ╟─c553d119-8eb9-4dcc-8476-7d0510420859
+# ╠═38cb8988-da0c-4009-93c6-d7c68a0608a8
+# ╠═4c0dd0c2-20a0-47c3-89ef-b4b277e18be2
+# ╠═a3cfa9fd-8668-468e-bc5e-029276304041
+# ╠═53acbc6b-4ac7-4879-b2ac-790653c966b4
+# ╠═7bc01491-321f-46ca-91c7-2d8ae3436085
+# ╠═30ec4721-80f5-4666-b511-eb0baea679ff
+# ╠═0e6aa94e-aefa-44fe-a72a-f02ca6ce9191
+# ╟─96e1374c-70e0-442e-a472-ac7463639e63
+# ╠═0d675afc-4538-415f-bda5-b3118f0e3bf8
+# ╟─0f5e05f6-19c4-4c15-a236-64856d6d7a95
+# ╠═2c51bc81-5f37-47e4-b232-c827790c4e29
+# ╟─ce2b0389-0522-4e94-b1dd-2daf3d072094
+# ╠═b79f849a-6373-4733-b324-ef5d1ef734fa
+# ╟─b04bbfce-bd0b-4d82-8837-bc33199d8803
+# ╠═0b50d95c-f1d3-4239-ba75-5b613c6c0fd5
+# ╠═a559d3d8-5cb1-4659-9ed3-f7148ceff191
+# ╟─a162b3a4-76e5-4c0e-867a-f65dacb54085
+# ╟─8816d89b-3be7-42f8-a68c-37b10502a9cd
+# ╟─14a25b66-5768-43d8-8ddf-05884c5571e7
+# ╠═2ae6a50f-fc04-4d8c-b464-c80a33ef2f7a
+# ╠═8c9f15af-861b-4dff-8304-06b8e5c5d196
+# ╟─a775baa8-3c11-46ba-9dd8-495bb2b3212e
+# ╠═828d9e44-0c7e-497b-b706-db3123fcfab7
+# ╠═85b7e0d0-b2ac-413a-bc59-ef09d5d15e73
+# ╠═7808bb71-1826-4f64-a951-2323896ceb88
+# ╠═1caaf622-be9b-4a21-a265-9689daab4b2f
+# ╠═bed50096-51e3-4d8c-9136-349ef1c2970f
+# ╠═7f82c338-5b4d-4330-bfc8-22b48bb80a49
+# ╠═d1c7fead-0d0b-4f78-be23-56917a378294
+# ╠═63448a95-1e49-4d8d-8fa6-1c84df6aa937
+# ╟─a90573cf-8629-4cbb-90ec-8b2be15581ba
+# ╠═ea917913-5fe6-4c81-9584-9eb29f2d65c4
+# ╟─70c8e824-4fe5-4c48-9f24-c24241478234
+# ╠═77a67d50-87c2-402d-a910-cdd71f43c420
+# ╠═524ce1a7-a875-4030-b55e-00c04ce310d0
+# ╠═da19004d-eaa0-4231-ac17-7b529bd8a36a
+# ╠═4438e8e9-52f7-4a38-bf89-b261ca762f8e
+# ╟─03304ff9-3452-4bc6-86dd-0f772f4e68e8
+# ╠═b9c1f01d-75ca-46e0-a5d9-01854e3b6c8a
+# ╠═27a545c0-12b1-4c65-b53e-f11c5b4c612e
+# ╟─8d3d94c1-05a3-48da-aaab-b3b7235d2074
+# ╠═23b9c0e0-cc75-49f4-9f13-3e2691e8626d
+# ╠═cc80ec3d-4d9d-42a8-8f19-7d83e3d4a592
+# ╟─3c9a7062-8dd1-44e2-bda6-bedaf6a01d5f
+# ╠═6573ff9b-66c0-4b86-926a-4ff091365079
+# ╠═fb8c66bc-93a6-42b0-b402-7768dba65a58
+# ╠═15f9ee3f-6926-41d7-8386-0e4ceaf95ed3
+# ╟─3082ec1c-a0bd-4545-979b-6f71a4804b63
+# ╟─fd8c6191-119d-4045-9c22-793e08e6c8ce
+# ╠═f7a7e97d-bacc-4635-bce1-efe081e8406d
+# ╠═f3f10945-1779-415e-a3e5-80e7d8ec4bdf
+# ╠═40bf2326-19d4-4284-9c00-43128155b14b
+# ╠═85e5c46b-5c5c-4314-bdf5-db2e5fa70664
+# ╠═24c4b58c-03cc-455b-8d04-edadda214453
+# ╠═2924c20d-d124-44b4-a48e-34befe16377d
+# ╠═f642527b-d422-4fe2-aac3-fb90262639bb
+# ╠═d825e500-66c9-43b7-b38d-f82b77c1911f
+# ╟─c47ddd31-d4af-4bf4-b186-47ad2f16448b
+# ╠═6e5545d0-6219-4bca-b305-33682e6c139b
+# ╠═1eb05299-f429-4b62-a9e0-c75287a147f6
+# ╠═7fa68a49-0acc-45b6-861e-425aa269f9c0
+# ╠═fd33e090-c6bf-4287-b436-e291e4522750
+# ╠═ec1d79be-e51e-4d3d-8522-73868aa3740d
+# ╠═0d523c6b-46bd-4b16-a149-b16413d89ac8
+# ╠═c6c5d6c1-ce0f-4b3b-9390-27b4d1bdae18
+# ╠═a963d978-2fe4-4f01-94ff-95b2d5073607
+# ╠═91ac24b7-6fdd-4e98-af9a-652c8bd2c0f6
+# ╠═495cd078-a889-49d4-813e-cfaae056af48
+# ╠═348923cc-0534-4d4f-a434-49ae1a5cfe73
+# ╠═519d4701-30a5-4cce-a065-97732ec4315e
+# ╠═109ff637-916a-44a0-aad1-1dbe7f99baaa
+# ╟─ec61b673-5ea8-408f-ab16-ccf9d795119b
+# ╠═09de51b7-eb51-4d49-872e-8305c89565cc
+# ╠═68e6ea4a-0073-40d1-8a8e-32007f58db39
+# ╠═d8eff01d-df5c-410c-8457-7e71761034e2
+# ╠═e1497e1b-2f63-4bd9-9956-996bfdb1650a
+# ╠═90fdba7c-c09e-4d80-981b-798176db1f9c
+# ╠═1eb74902-e541-4fe0-a0b3-a3d8c659eed5
+# ╠═c8470dac-de51-4b3b-bbde-59da00956eb7
+# ╟─95d21544-e9c4-4954-b21b-7a3123e7e18f
+# ╠═251a14d2-5449-47cc-9fe2-5a070773d41e
+# ╠═39ee9b48-f51d-417a-8fe2-7ca2188af419
+# ╠═3d6adfa6-e79d-40c5-b26f-3230fe00727e
+# ╠═6beade54-ee2b-4b29-b0af-83b077144579
+# ╠═bead17ad-6491-4afa-9560-117242155917
+# ╟─19cf5c05-9e42-44a3-8bee-6b99ab2626c6
+# ╠═119c4492-0ebc-464d-aa64-1dfc16389f5f
+# ╠═8dd038f7-6ea8-462a-94bd-892df87d894f
+# ╠═c62ebfe3-8c95-4f32-9c47-ed03c2213821
+# ╠═65dcf819-0711-4ea7-abf4-99f782036d0b
+# ╟─64f4f513-81ea-4828-ac34-62d96f49f1e6
+# ╠═4b65d48b-408f-4de1-b393-11a870f5a9e2
+# ╠═164d1acd-f612-432a-a5b2-0eb3167a6945
+# ╠═96fcce97-dec2-43a1-b9ec-7597b2c22a63
+# ╠═5cf55486-e993-46c4-bf86-0ebf13a07e3d
+# ╠═05e134aa-3857-4636-a6da-e31d78010b82
+# ╟─9ba95723-49a1-4a09-b586-08c53dcd0f55
+# ╠═557930d9-77f9-4662-93f8-f7f66a52b2fa
+# ╠═89e8aa64-97d2-4f60-9991-d3fbc0ea7ea2
+# ╠═1642fa60-04b8-4bc5-a390-e6319bd56a9e
+# ╠═153d882d-82a2-4e96-9b57-c7d80720ed4b
+# ╠═da97b199-6d56-497e-9229-a43b64e02208
+# ╠═b33d2fc4-40fa-4c7e-85b1-2f65ecc54ba9
+# ╠═350877ce-d49d-4971-b801-7c4a5431d53a
+# ╠═8476099d-cfb1-422b-9a0c-ab553b84c082
+# ╠═bc489e47-1803-4ffb-b271-82a19f9657b8
+# ╠═70227db2-677d-4cc9-b93f-f7c52b3eae41
+# ╠═f057dd7e-05be-402b-9dd8-fc85bdf879f4
+# ╠═9969d915-b989-433d-80de-f0fdcf515472
+# ╠═83779b35-61bb-4a9b-aa09-8db5f55ab45f
+# ╠═4b9c03c4-eb09-41e0-b1ba-7bdcdb2dc103
+# ╟─914e624e-b22f-445d-aaa6-d7b751206e95
+# ╠═5124f147-7a35-47a9-ad92-0393727ac754
+# ╠═1582ec32-5ebe-48d8-a2bf-b1c8d88a7310
+# ╠═1342f411-b2cd-4f17-91cc-2988c6a8efab
+# ╟─cf71d33a-7868-464d-b8d4-9fad0071961c
+# ╟─00000000-0000-0000-0000-000000000001
+# ╟─00000000-0000-0000-0000-000000000002
