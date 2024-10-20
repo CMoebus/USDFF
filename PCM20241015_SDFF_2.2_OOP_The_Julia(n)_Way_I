@@ -7,13 +7,13 @@ using InteractiveUtils
 # ╔═╡ 14f715db-ae10-450d-8b7b-7989d90a4e7d
 begin
 	using Pluto
-	using Plots
 	using LinearAlgebra
+	using Plots
 	using LaTeXStrings, Latexify
 	#-------------------------------------------------------
 	println("pkgversion(Pluto)         = ", pkgversion(Pluto))
-	println("pkgversion(Plots)         = ", pkgversion(Plots))
 	println("pkgversion(LinearAlgebra) = ", pkgversion(LinearAlgebra))
+	println("pkgversion(Plots)         = ", pkgversion(Plots))
 end # begin
 
 # ╔═╡ 7b2996c7-fca1-426b-b31b-051c2cc12128
@@ -31,8 +31,8 @@ md"
 ### PCM20241015 SDFF 2.2 OOP, The Julia(n) Way I
 ##### - Replacement of SDFF, ch 2.2 -
 ##### file: PCM20241015\_SDFF\_2.2\_OOP\_The\_Julia(n)\_Way\_I
-##### libraries: Julia 1.11.1/Pluto 0.20.0/Plots 1.40.8
-##### code: Pluto/Julia-code by PCM *** 2024/10/19 ***
+##### libraries: Julia 1.11.1/Pluto 0.20.0/Plots 1.40.8/LinearAlgebra 1.11.0
+##### code: Pluto/Julia-code by PCM *** 2024/10/20 ***
 =====================================================================================
 "
 
@@ -40,7 +40,7 @@ md"
 md"
 ##### 0. Introduction
 First we present how software *namespaces* can be representated in a hierarchy of modules.
-Then we describe how to model hierarchies of *concepts* by *abstract*, *concrete types*, *multiple-dispatched methods*, and *instances* of concrete types which play the role of *objects*. 
+Then we describe how to model *hierarchies* of *concepts* by *abstract*, *concrete types (= classes)*, *multiple-dispatched methods*, and *instances (= objects)*. 
 "
 
 # ╔═╡ f376afea-fc1e-48c0-80f9-596bce368c6a
@@ -94,22 +94,23 @@ foo3(3)
 # ╔═╡ 345f127d-7fb5-4062-84f4-1a03b8a741ab
 md"
 ---
-##### 3. Concepts, Types, Classes, and Instances (= OOP, the Julia(n) way)
-*Structure* and *behaviour* are *decoupled* in Julia. *Structure* is represented in *types* and *behaviour* in *methods* belonging to *function objects*.
+##### 3. [Concepts](https://en.wikipedia.org/wiki/Concept), Types, Classes, and Instances (= OOP, the Julia(n) way)
+*Structure* and *behaviour* are *decoupled* in Julia. *Structure* is represented in *types* and *behaviour* in *methods*.
 
-The software design *philosophy* is:
+The software design philosophy used here is called [*behavior subtyping*](https://en.wikipedia.org/wiki/Behavioral_subtyping) (Kwong, 2020, ch.12, p.461f):
 
-- *[Concept](https://en.wikipedia.org/wiki/Concept) hierarchies* are represented by *types*
+- *Concepts* are represented by *types (= classes)*.
 
-- *Abstract* types represent *formal* representations of *concepts*. They can be partially ordered in a *super-/subtype* hierarchy. The *only* purpose of this hierarchy is, how behaviour can be *delegated* from subtypes to supertypes if the subtype has no relevant method to react properly. Abstract types *don't* allow any fields for data.
+- *Abstract* types represent *classes* which are formal *representations* of *concepts*. They can be partially ordered in a *super-/subtype* hierarchy. The *only* purpose of this hierarchy is to show how behaviour is *delegated* from subtypes to supertypes or inversely *inherited* from supertypes to subtypes. If the subtype has *no* relevant method to react properly the supertype is tried. Unlike in other mainstream OOP languages (like e.g. Java) Julia's abstract types *don't* allow storing data *fields*. This strategy is called *behavior subtyping* (Kwong, 2020, ch.12, p.461) in contrast to *implementation inheritance*. *Implementation inheritance allows a subclass to inherit both fields and methods from its superclass* (Kwong, 2020, ch.12, p.459).
 
-- *Concrete* types represent *classes* which are sets of *possible* values (= *instances, objects*). In our implementation presented here is an *one-to-one* mapping between abstract and concrete types. Each concrete type is a subtype of the corresponding abstract one. Subtypes may have *fields*. They define *constructors* which can generate *instances* (= *objects*) which inherit the fields of the (concrete) type by applying the constructor. 
+- *Concrete* types represent *classes* which are sets of *possible* values (= *instances, objects*). In our implementation presented here is an *one-to-one* mapping between abstract and concrete types. Each concrete type is a *final* subtype of the corresponding abstract one. The meaning of *final* is that there is *no* subtyping allowed. Subtypes may have *fields*. *Concrete* types are not declared explicitly like *abstract* types. Instead they are defined implicitly by *constructors* which generate *instances* (= *objects*) with fields defined in the (concrete) type. 
 
-- *Constructors* for instances (= objects) are derived from the names of the (concrete) type. They can be called like methods or functions. In a call of the constructor the argument *values* are bound to the field *names*. In our implementation instances *only* posses *data-fields* and *no* methods. 
+- *Constructors* for instances (= objects) have output types which implicitly define the names of its corresponding (concrete) type. Constructors can be called like methods or functions. In a call the argument *values* are bound to the field *names*. In our implementation instances posses *data-fields* and *methods* ($describe$ method). 
 
-- *Instances* (= objects) inherit their field names via the construction process by the underlying concrete class. Objects (= instances) in this implementation *don't* posses behavior in form of methods. *Methods* are located in *abstract types*.
+- *Instances* (= objects) obtain their field in the construction process by the constructor which defines implicitly the corresponding concrete class. In this implementation instances possess *fields* and a single *method* ($describe$).
 
 - *Methods* implement behavior depending on the *signature* of the method. If the call of a method does not match with the parameters of a special method the next more general method will be tried (= *multiple dispatch*). This way we can succeed in implementing a *delegation* mechanism simulating *inheritance*.
+
 "
 
 # ╔═╡ 24653141-6aac-4a20-9370-6288f7f0d4dc
@@ -202,7 +203,7 @@ Fig. 2: *Super-/subtype* hierarchy of *abstract* and *concrete* types of 2D-poly
 md"
 ---
 ###### 4.2.1 *Abstract Type* Defining the *Concept Tree* of *Polygons*
-The concepts *IsoscelesRightTriangles*, *Rhombi*, and *Squares* possess *multiple* inheritance (Fig. 1). To transform this attribute into *single* inheritance we apply the $typejoin$ function to the *direct* supertypes in the original mixed concept hierarchy. This way we modify the *mixed* inheritance hierarchy (Fig. 1) into a *single* inheritance *tree* (Fig, 2). 
+The concepts *IsoscelesRightTriangles*, *Rhombi*, and *Squares* possess *multiple* inheritance (Fig. 1). To transform this attribute into *single* inheritance we apply the $typejoin$ function to the *direct* supertypes in the original mixed concept hierarchy. This way we modify the *mixed* inheritance hierarchy (Fig. 1) into a *single* inheritance *tree* (Fig, 2). By applying the $typejoin$ function we circumvent the [*rectangle-square*](https://en.wikipedia.org/wiki/Circle%E2%80%93ellipse_problem) or [*ellipse-circle*](https://en.wikipedia.org/wiki/Circle%E2%80%93ellipse_problem) problem.
 "
 
 # ╔═╡ 07580187-c952-480d-a8e9-e9970c310d7f
@@ -1000,7 +1001,9 @@ md"
 - **Abelson, H., Sussman, G.J., and Sussman, J.**; [*Structure and Interpretation of Computer Programs*](https://web.mit.edu/6.001/6.037/sicp.pdf), Cambridge, Mass.: MIT Press, 1996, 2/e, last visit 2024/10/16
 - **Julia-doc**; [*More on types*](https://docs.julialang.org/en/v1/devdocs/types/#More-about-types); last visit 2022/07/22
 - **Kwong, T.**; *Design Patterns and Best Practices with Julia*, Birmingham, UK: Packt Publ.Ltd., 2020
+- **Wikipedia**; [Behavior Subtyping](https://en.wikipedia.org/wiki/Behavioral_subtyping); last visit 2024/10/20
 - **Wikipedia**; [*Concept*](https://en.wikipedia.org/wiki/Concept); last visit 2024/10/16
+- **Wikipedia**; [*Ellipse-Circle Problem*](https://en.wikipedia.org/wiki/Circle%E2%80%93ellipse_problem); last visit 2024/10/20
 - **Wikipedia**; [*Euler Diagram*](https://en.wikipedia.org/wiki/Euler_diagram); last visit 2024/10/16
 - **Wikipedia**; [*Hasse Diagram*](https://en.wikipedia.org/wiki/Hasse_diagram); last visit 2022/07/26
 - **Wikipedia**; [*Polygon*](https://en.wikipedia.org/wiki/Polygon#Area); last visit 2022/07/26
