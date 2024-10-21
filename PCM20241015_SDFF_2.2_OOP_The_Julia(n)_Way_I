@@ -32,14 +32,14 @@ md"
 ##### - Replacement of SDFF, ch 2.2 -
 ##### file: PCM20241015\_SDFF\_2.2\_OOP\_The\_Julia(n)\_Way\_I
 ##### libraries: Julia 1.11.1/Pluto 0.20.0/Plots 1.40.8/LinearAlgebra 1.11.0
-##### code: Pluto/Julia-code by PCM *** 2024/10/20 ***
+##### code: Pluto/Julia-code by PCM *** 2024/10/21 ***
 =====================================================================================
 "
 
 # ╔═╡ 53f21356-37d8-466f-be30-3268ffc3f9b5
 md"
 ##### 0. Introduction
-First we present how software *namespaces* can be representated in a hierarchy of modules.
+First we present how software *namespaces* can be representated in a hierarchy of nested *modules*.
 Then we describe how to model *hierarchies* of *concepts* by *abstract*, *concrete types (= classes)*, *multiple-dispatched methods*, and *instances (= objects)*. 
 "
 
@@ -95,21 +95,31 @@ foo3(3)
 md"
 ---
 ##### 3. [Concepts](https://en.wikipedia.org/wiki/Concept), Types, Classes, and Instances (= OOP, the Julia(n) way)
-*Structure* and *behaviour* are *decoupled* in Julia. *Structure* is represented in *types* and *behaviour* in *methods*.
+OOP in Julia is similar but not identical to OOP in mainstream OOP languages like C++, Java, or Ruby. *Structure* and *behaviour* are *decoupled* in Julia. *Structure* is represented in *types* and *behaviour* in *methods*. *Types* are similar to mainstream OOP *classes*. There a two kind types in Julia: *abstract* and *concrete*.
 
-The software design philosophy used here is called [*behavior subtyping*](https://en.wikipedia.org/wiki/Behavioral_subtyping) (Kwong, 2020, ch.12, p.461f):
+*Abstract* types control *inheritance* or *delegation* of behavior by *multiple dispatch* of *methods*. An abstract type can posess methods but *not* *attributes* in the form of *data fields*. 
 
+*Concrete* types can possess *data fields* and *methods*. They can be connected to abstract types. The *only* purpose of *concrete* types is the *generation* of *instances*. They are *final* and *cannot* be *subtyped*.
+
+*Methods* are called with *instances* as *one* of the *arguments*. The method call is *delegated* by *multiple dispatch* to the correct implementation. This is called [*structural subtyping*](https://en.wikipedia.org/wiki/Structural_type_system) or [*duck tying*](https://en.wikipedia.org/wiki/Duck_typing) if the instance argument is without type information (Kwong, 2020, ch. 12, p.467). Otherwise it's called [*nominal subtyping*](https://en.wikipedia.org/wiki/Nominal_type_system) (Kwong, 2020, ch. 12, p.467). Now with an *typified instance* argument the method call can be *delegated* along the *subtype-type-supertype hierarchy* to the matching method stored in the correct *abstract* type. In our implementation presented here  we use *nominal subtyping*.
+
+"
+
+# ╔═╡ d6d3106d-e7a7-4a6f-b9ab-fd4d4f448245
+md"
+
+In the implementation used here we apply *nominal behavior subtyping*:
 - *Concepts* are represented by *types (= classes)*.
 
 - *Abstract* types represent *classes* which are formal *representations* of *concepts*. They can be partially ordered in a *super-/subtype* hierarchy. The *only* purpose of this hierarchy is to show how behaviour is *delegated* from subtypes to supertypes or inversely *inherited* from supertypes to subtypes. If the subtype has *no* relevant method to react properly the supertype is tried. Unlike in other mainstream OOP languages (like e.g. Java) Julia's abstract types *don't* allow storing data *fields*. This strategy is called *behavior subtyping* (Kwong, 2020, ch.12, p.461) in contrast to *implementation inheritance*. *Implementation inheritance allows a subclass to inherit both fields and methods from its superclass* (Kwong, 2020, ch.12, p.459).
 
-- *Concrete* types represent *classes* which are sets of *possible* values (= *instances, objects*). In our implementation presented here is an *one-to-one* mapping between abstract and concrete types. Each concrete type is a *final* subtype of the corresponding abstract one. The meaning of *final* is that there is *no* subtyping allowed. Subtypes may have *fields*. *Concrete* types are not declared explicitly like *abstract* types. Instead they are defined implicitly by *constructors* which generate *instances* (= *objects*) with fields defined in the (concrete) type. 
+- *Concrete* types represent *classes* which are sets of *possible* values (= *instances, objects*). In our implementation there is an *one-to-one* mapping between abstract and concrete types. Each concrete type is a *final* subtype of the corresponding abstract one. The meaning of *final* is that there is *no* subtyping allowed. *Concrete* types are not declared explicitly like *abstract* types. Instead they are defined implicitly by the $struct$-keyword. The $struct$*ure* provides *generators* for *instances* (= *objects*) with fields defined in the (concrete) type. 
 
-- *Constructors* for instances (= objects) have output types which implicitly define the names of its corresponding (concrete) type. Constructors can be called like methods or functions. In a call the argument *values* are bound to the field *names*. In our implementation instances posses *data-fields* and *methods* ($describe$ method). 
+- *Constructors* for instances (= objects) possess types which define the type of its generated instance. Constructors can be called like methods or functions. In a call the argument *values* are bound to the field *names* inherited from the *concrete* type (= $struct$). In our implementation instances posses *data-fields* and *methods* ($describe$ method). 
 
-- *Instances* (= objects) obtain their field in the construction process by the constructor which defines implicitly the corresponding concrete class. In this implementation instances possess *fields* and a single *method* ($describe$).
+- *Instances* (= objects) obtain their field in the construction process by the constructor which defines implicitly the corresponding concrete class. In this implementation instances possess *attributes* (= *fields*) and a single *method* ($describe$).
 
-- *Methods* implement behavior depending on the *signature* of the method. If the call of a method does not match with the parameters of a special method the next more general method will be tried (= *multiple dispatch*). This way we can succeed in implementing a *delegation* mechanism simulating *inheritance*.
+- *Methods* implement behavior depending on the *signature* of the method. If the call of a method does not match with the parameters of a special method the next more general method will be tried (= *multiple dispatch*). This way we can succeed in implementing a *delegation* mechanism simulating *inheritance*. This is called *nominal behavioral subtyping*
 
 "
 
@@ -985,12 +995,12 @@ md"
 ---
 ##### 8. Summary
 
-First we presented how software *namespaces* can be representated in a hierarchy of modules.
-Then we described how to model hierarchies of *concepts* by *abstract*, *concrete types*, and *instances* (= *objects*). 
+First we presented how software *namespaces* can be representated in a hierarchy of *modules*.
+Then we described how to model hierarchies of *concepts* by *abstract*, *concrete types*, and *instances* (= *objects*) by *nominal behavioral subtyping*. 
 
 As a proof of concept we defined several *methods* for computing the area of the polygon. So methods are attached to the abstract types *Polygons*, *Triangles*, *Rectangles*, and *Squares*. 
 
-This way the area of all instances belonging to those types are computed *directly* by these *local* methods. For all other instances their abstract type has no area method at hand. So the area computation is *delegated upwards* the inheritance tree till a matching method is found.
+This way the area of all instances belonging to those types is computed *directly* by these *local* methods. For all other instances their abstract type has no area method at hand. So the area computation is *delegated upwards* the inheritance tree till a matching method is found. 
 
 "
 
@@ -2283,6 +2293,7 @@ version = "1.4.1+1"
 # ╠═243c05e9-b85b-41ff-8fa3-512d27498d27
 # ╠═76ba775d-4005-4c98-ab5b-4f557daddd06
 # ╟─345f127d-7fb5-4062-84f4-1a03b8a741ab
+# ╟─d6d3106d-e7a7-4a6f-b9ab-fd4d4f448245
 # ╟─24653141-6aac-4a20-9370-6288f7f0d4dc
 # ╟─ea9c7687-96b8-493b-b918-08a2ea8433e4
 # ╟─b01a53a2-e38d-4095-adc5-1608f0d341de
