@@ -32,7 +32,7 @@ md"
 ##### - Replacement of SDFF, ch 2.2 -
 ##### file: PCM20241015\_SDFF\_2.2\_OOP\_The\_Julia(n)\_Way\_I
 ##### libraries: Julia 1.11.1/Pluto 0.20.0/Plots 1.40.8/LinearAlgebra 1.11.0
-##### code: Pluto/Julia-code by PCM *** 2024/10/21 ***
+##### code: Pluto/Julia-code by PCM *** 2024/11/21 ***
 =====================================================================================
 "
 
@@ -95,31 +95,33 @@ foo3(3)
 md"
 ---
 ##### 3. [Concepts](https://en.wikipedia.org/wiki/Concept), Types, Classes, and Instances (= OOP, the Julia(n) way)
-OOP in Julia is similar but not identical to OOP in mainstream OOP languages like C++, Java, or Ruby. *Structure* and *behaviour* are *decoupled* in Julia. *Structure* is represented in *types* and *behaviour* in *methods*. *Types* are similar to mainstream OOP *classes*. There a two kind types in Julia: *abstract* and *concrete*.
+Julia is (like Scheme) more *functional* than *object-orientated* but with *imperative* aspects. OOP in Julia is similar but not identical to OOP in mainstream languages. *Structure* and *behaviour* are *decoupled*. *Structure* and *instances* are represented in *types* and *behaviour* in *methods*. There are two kind of types in Julia: *abstract* and *concrete*. When it is *concrete* then it is similar to mainstream OOP *classes*. 
 
-*Abstract* types control *inheritance* or *delegation* of behavior by *multiple dispatch* of *methods*. An abstract type can posess methods but *not* *attributes* in the form of *data fields*. 
+- *Abstract* types control *inheritance* or *delegation* of behavior by *multiple dispatch* of *methods*. An abstract type can posess methods but *not* *attributes* in the form of *data fields*. 
 
-*Concrete* types can possess *data fields* and *methods*. They can be connected to abstract types. The *only* purpose of *concrete* types is the *generation* of *instances*. They are *final* and *cannot* be *subtyped*.
+- *Concrete* types can possess both *data fields* and *methods*. They can be connected to abstract types. The *only* purpose of *concrete* types is the *generation* of *instances*. They are *final* and *cannot* be *subtyped*.
 
-*Methods* are called with *instances* as *one* of the *arguments*. The method call is *delegated* by *multiple dispatch* to the correct implementation. This is called [*structural subtyping*](https://en.wikipedia.org/wiki/Structural_type_system) or [*duck tying*](https://en.wikipedia.org/wiki/Duck_typing) if the instance argument is without type information (Kwong, 2020, ch. 12, p.467). Otherwise it's called [*nominal subtyping*](https://en.wikipedia.org/wiki/Nominal_type_system) (Kwong, 2020, ch. 12, p.467). Now with an *typified instance* argument the method call can be *delegated* along the *subtype-type-supertype hierarchy* to the matching method stored in the correct *abstract* type. In our implementation presented here  we use *nominal subtyping*.
+- *Methods* are called with *instances* as *one* of the *arguments*. The method call is *delegated* by *multiple dispatch* to the correct implementation. This is called [*structural subtyping*](https://en.wikipedia.org/wiki/Structural_type_system) or [*duck tying*](https://en.wikipedia.org/wiki/Duck_typing) if the instance argument is *without* type information (Kwong, 2020, ch. 12, p.467). Otherwise it's called [*nominal subtyping*](https://en.wikipedia.org/wiki/Nominal_type_system) (Kwong, 2020, ch. 12, p.467). 
+
+- In our implementation presented here we use *nominal subtyping*. With an *typified instance* argument the *method call* can be *delegated* along the *subtype-type-supertype hierarchy* to the matching method stored in the correct *abstract* type. 
 
 "
 
 # ╔═╡ d6d3106d-e7a7-4a6f-b9ab-fd4d4f448245
 md"
 
-In the implementation used here we apply *nominal behavior subtyping*:
-- *Concepts* are represented by *types (= classes)*.
+In the implementation presented here we apply *nominal* behavior *subtyping*:
+- *Concepts* are represented by *types*.
 
-- *Abstract* types represent *classes* which are formal *representations* of *concepts*. They can be partially ordered in a *super-/subtype* hierarchy. The *only* purpose of this hierarchy is to show how behaviour is *delegated* from subtypes to supertypes or inversely *inherited* from supertypes to subtypes. If the subtype has *no* relevant method to react properly the supertype is tried. Unlike in other mainstream OOP languages (like e.g. Java) Julia's abstract types *don't* allow storing data *fields*. This strategy is called *behavior subtyping* (Kwong, 2020, ch.12, p.461) in contrast to *implementation inheritance*. *Implementation inheritance allows a subclass to inherit both fields and methods from its superclass* (Kwong, 2020, ch.12, p.459).
+- *Abstract* types are formal *representations* of *concepts*. They can be partially ordered in a *super-/subtype* hierarchy. The *only* purpose of this hierarchy is to show how behaviour is *delegated* from subtypes to supertypes or inversely *inherited* from supertypes to subtypes. If the subtype has *no* relevant method to react properly the supertype is tried. Unlike in other mainstream OOP languages Julia's abstract types *don't* allow storing *data fields*. This strategy is called *behavior subtyping* (Kwong, 2020, ch.12, p.461) in contrast to *implementation inheritance*. *Implementation inheritance allows a subclass to inherit both fields and methods from its superclass* (Kwong, 2020, ch.12, p.459). *Behavior subtyping* avoids some problems like the [*rectangle-square*](https://en.wikipedia.org/w/index.php?title=Square-rectangle_problem&redirect=no) and the [*ellipse-circle*](https://en.wikipedia.org/wiki/Circle%E2%80%93ellipse_problem) problem.
 
-- *Concrete* types represent *classes* which are sets of *possible* values (= *instances, objects*). In our implementation there is an *one-to-one* mapping between abstract and concrete types. Each concrete type is a *final* subtype of the corresponding abstract one. The meaning of *final* is that there is *no* subtyping allowed. *Concrete* types are not declared explicitly like *abstract* types. Instead they are defined implicitly by the $struct$-keyword. The $struct$*ure* provides *generators* for *instances* (= *objects*) with fields defined in the (concrete) type. 
+- *Concrete* types represent *classes* which are *generators* of *possible* values (= *instances, objects*). In our implementation there is an *one-to-one* mapping between abstract and concrete types. Each concrete type is a *final* subtype of the corresponding abstract one. The meaning of *final* is that there is *no* subtyping allowed. *Concrete* types are not declared explicitly like *abstract* types. Instead they are defined implicitly by the $struct$-keyword. The $struct$*ure* automatically provides *generators* for *instances* (= *objects*) with fields defined in the (concrete) type. 
 
-- *Constructors* for instances (= objects) possess types which define the type of its generated instance. Constructors can be called like methods or functions. In a call the argument *values* are bound to the field *names* inherited from the *concrete* type (= $struct$). In our implementation instances posses *data-fields* and *methods* ($describe$ method). 
+- *Constructors* for instances (= objects) possess the same type as the concrete type. This defines the type of all its generated instances. Constructors can be called like methods or functions. In a call the argument *values* are bound to the field *names* inherited from the *concrete* type (= $struct$). In our implementation instances posses *data-fields* and *methods* ($describe$ method). 
 
-- *Instances* (= objects) obtain their field in the construction process by the constructor which defines implicitly the corresponding concrete class. In this implementation instances possess *attributes* (= *fields*) and a single *method* ($describe$).
+- *Instances* (= objects) obtain their field in the construction process by the constructor which defines implicitly the corresponding concrete class. For demonstration purposes instances possess here several *attributes* (= *fields*) and only a single *method* ($describe$).
 
-- *Methods* implement behavior depending on the *signature* of the method. If the call of a method does not match with the parameters of a special method the next more general method will be tried (= *multiple dispatch*). This way we can succeed in implementing a *delegation* mechanism simulating *inheritance*. This is called *nominal behavioral subtyping*
+- *Methods* implement behavior depending on the *signature* of the method. If the call of a method does not match with the parameters of a special method the next more general method will be tried (= *multiple dispatch*). This way we can succeed in implementing a *delegation* mechanism simulating *inheritance*.
 
 "
 
@@ -155,7 +157,7 @@ md"
     Equilateral          Isosceles Right                         |
     Triangle(s)            Triangle(s)                       Square(s)           
 
-Fig. 1: *Mixed* concept hierarchy of *abstract* and *concrete* types of 2D-polygons (inspired by Fig.2.26 in Abelson, Sussman & Sussman, [SICP, 2/e, 1996](https://web.mit.edu/6.001/6.037/sicp.pdf)); plural form of concept names (like: *Polygons*) denotes *abstract* and singular form (like: *Square*) *concrete* types.
+Fig. 1: *Mixed* concept hierarchy of *abstract* and *concrete* types of 2D-polygons (inspired by Fig.2.26 in Abelson, Sussman & Sussman, [SICP, 2/e, 1996](https://web.mit.edu/6.001/6.037/sicp.pdf)); singular form of concept names (like: *Polygon*) denotes *abstract* and plural form (like: *Squares*) *concrete* types.
 
 "
 
@@ -163,9 +165,9 @@ Fig. 1: *Mixed* concept hierarchy of *abstract* and *concrete* types of 2D-polyg
 md"
 ---
 ###### 4.2 *Abstract* Types (see Fig. 1 above)
-The above Fig. 1 is an example of an *informal* concept hierarchy with *muliple* inheritance. Each informal concept will be mapped to a Julia(n) *abstract* type. A *type* is defined as a *set* of *possible* values. Because of semantic ambiguities for certain concepts (here: *IsoscelesRightTriangle(s)*, *Rhomb(us|i)*, and *Square(s)*) we have to transform the *directed acyclic graph (DAG)* of this *multiple* inheritance hierarchy into a *tree* with *single* inheritance (Fig. 2). 
+Fig. 1 above is an example of an *informal* concept hierarchy with *multiple* inheritance. Each informal concept will be mapped to a Julia(n) *abstract* type. A *concrete type* is defined as a *set* of *possible* values. Because of semantic ambiguities for certain concepts (here: *IsoscelesRightTriangle(s)*, *Rhomb(us|i)*, and *Square(s)*) we have to transform the *directed acyclic graph (DAG)* of this *multiple* inheritance hierarchy into a *tree* with *single* inheritance (Fig. 2). 
 
-To achieve this transformation we use the Julian(n) [*typejoin-function*](https://docs.julialang.org/en/v1/base/base/#Base.typejoin) to determine the *closest common ancestor* of abstract type *IsoscelesRightTriangles*, *Rhombi* and *Square*. The result is a *tree* with *single* inheritance and *unambiguous* delegation of behavior.
+To achieve this transformation we use the Julian(n) [*typejoin-function*](https://docs.julialang.org/en/v1/base/base/#Base.typejoin) to determine the *closest common ancestor* of abstract type *IsoscelesRightTriangle*, *Rhombus* and *Square*. The result is a *tree* with *single* inheritance and *unambiguous* delegation of behavior.
 
 To obtain *true* *OO-design* in Julia we use five *design artifacts*:
 - a hierarchy of *abstract* types
@@ -176,7 +178,7 @@ To obtain *true* *OO-design* in Julia we use five *design artifacts*:
 
 These artifacts have various roles:
 - *Abstract* types specify which behaviours are *responsible* for, *inherited* from, or *delegated* to various types and objects (= instances).
-- *Concrete* types are related here one-to-one to abstract types and specify the *data fields* the objects obtain from the concrete types when being generated.
+- *Concrete* types are related here one-to-one to *abstract* types and specify the *data fields* the objects obtain from the concrete types when being generated.
 - *Instances* represent concrete specific objects (here: *individual* geometric figures with an instance-specific area)
 - *Methods* implement the behavior of instances. These instances have delegated their behavior to the abstract type they belong to. If this abstract type does not recognize this behaviour the call is *delegated* upwards to the corresponding abstract type or further upwards along the supertype chain.
 "
@@ -191,7 +193,7 @@ md"
                      |                                           |                   
            +-------->+<--------+                       +-------->+<--------+        
            |         |         |                       |         |         |        
-       Isosceles     |       Right                 Trapezoids    |       Kites     
+       Isosceles     |       Right                Trapezoid(s)   |      Kite(s)     
       Triangle(s)    |     Triangle(s)                 |         |                 
            |         |                          Parallelogram(s) |                
            |         |                                 |         |                  
@@ -202,8 +204,8 @@ md"
            |                   |                 Rectangle(s)    |    Rhomb(us|I)  
            |                   |                                 |         
            |                   |                                 +             
-    Equilateral          Isosceles Right                         |
-    Triangle(s)            Triangle(s)                       Square(s)           
+      Equilateral         Isosceles Right                        |
+      Triangle(s)           Triangle(s)                       Square(s)           
 
 Fig. 2: *Super-/subtype* hierarchy of *abstract* and *concrete* types of 2D-polygons; *super-/sub*type relations are denoted by '--->^' or '^<---'.
 
@@ -219,32 +221,32 @@ The concepts *IsoscelesRightTriangles*, *Rhombi*, and *Squares* possess *multipl
 # ╔═╡ 07580187-c952-480d-a8e9-e9970c310d7f
 begin
 	#--------------------------------------------------------------------------------
-	abstract type Polygons end                                   # abstract type 1
+	abstract type Polygon end                                    # abstract type 1
 	#--------------------------------------------------------------------------------
-	abstract type Triangles <: Polygons end                      # abstract type 2
-	abstract type Quadrilaterals <: Polygons end                 # abstract type 3
+	abstract type Triangle <: Polygon end                        # abstract type 2
+	abstract type Quadrilateral <: Polygon end                   # abstract type 3
 	#--------------------------------------------------------------------------------
-	abstract type IsoscelesTriangles <: Triangles end            # abstract type 4
-	abstract type RightTriangles <: Triangles end                # abstract type 5
+	abstract type IsoscelesTriangle <: Triangle end              # abstract type 4
+	abstract type RightTriangle <: Triangle end                  # abstract type 5
 	#------------------------------------------------
-	abstract type Trapezoids <: Quadrilaterals end               # abstract type 6
-	abstract type Kites <: Quadrilaterals end                    # abstract type 7
+	abstract type Trapezoid <: Quadrilateral end                 # abstract type 6
+	abstract type Kite <: Quadrilateral end                      # abstract type 7
 	#------------------------------------------------
-	abstract type Parallelograms <: Trapezoids end               # abstract type 8
+	abstract type Parallelogram <: Trapezoid end                 # abstract type 8
 	#--------------------------------------------------------------------------------
-	abstract type Rectangles <: Parallelograms end               # abstract type 9
-	# closest common ancestor type is Quadrilaterals
-	println(typejoin(Parallelograms, Kites))                   # ==> Quadrilateral
-	abstract type Rhombi <: typejoin(Parallelograms, Kites) end  # abstract type 10
+	abstract type Rectangle <: Parallelogram end                 # abstract type 9
+	# closest common ancestor type is Quadrilateral
+	println(typejoin(Parallelogram, Kite))                       # ==> Quadrilateral
+	abstract type Rhombus <: typejoin(Parallelogram, Kite) end   # abstract type 10
 	#--------------------------------------------------------------------------------
-	abstract type EquilateralTriangles <: IsoscelesTriangles end # abstract type 11
-	# closest common ancestor type is Triangles
-	println(typejoin(IsoscelesTriangles, RightTriangles))        # ==> Triangles 
-	abstract type IsoscelesRightTriangles <: typejoin(IsoscelesTriangles, RightTriangles) end                                          # abstract type 12
+	abstract type EquilateralTriangle <: IsoscelesTriangle end   # abstract type 11
+	# closest common ancestor type is Triangle
+	println(typejoin(IsoscelesTriangle, RightTriangle))          # ==> Triangles 
+	abstract type IsoscelesRightTriangle <: typejoin(IsoscelesTriangle, RightTriangle) end                                           # abstract type 12
 	#--------------------------------------------------------------------------------
-	# closest common ancestor type is Quadrilaterals
-	println(typejoin(Rectangles, Rhombi))                      # ==> Quadrilaterals
-	abstract type Squares <: typejoin(Rectangles, Rhombi) end    # abstract type 13
+	# closest common ancestor type is Quadrilateral
+	println(typejoin(Rectangle, Rhombus))                        # ==> Quadrilaterals
+	abstract type Square <: typejoin(Rectangle, Rhombus) end     # abstract type 13
 	#--------------------------------------------------------------------------------
 end
 
@@ -255,43 +257,43 @@ md"
 "
 
 # ╔═╡ 1ea65c72-a7ac-4af2-8a1e-b2d9c8a8305d
-supertype(Polygons)
+supertype(Polygon)
 
 # ╔═╡ 8dab1af0-5a6a-423e-b5d5-c80c2621b300
-supertype(Triangles)
+supertype(Triangle)
 
 # ╔═╡ e942e438-ed50-4cfa-bcfd-b43e2dd0b536
-supertype(Quadrilaterals)
+supertype(Quadrilateral)
 
 # ╔═╡ e78234ec-ddaa-4053-836c-7ed55a7a8cbe
-supertype(IsoscelesTriangles)
+supertype(IsoscelesTriangle)
 
 # ╔═╡ 02a82454-3f4d-47f9-b1a5-184601477730
-supertype(RightTriangles)
+supertype(RightTriangle)
 
 # ╔═╡ a685fd8e-2414-4142-85f7-76d8a91f4dc8
-supertype(Trapezoids)
+supertype(Trapezoid)
 
 # ╔═╡ 7af84872-5d3c-4520-b9d8-8a55edcc1f85
-supertype(Kites)
+supertype(Kite)
 
 # ╔═╡ a9a32f2f-73cc-40eb-af39-7584c383a54b
-supertype(Parallelograms)
+supertype(Parallelogram)
 
 # ╔═╡ d58ca52f-1383-4975-85a8-2ffc5e60bb29
-supertype(Rectangles)
+supertype(Rectangle)
 
 # ╔═╡ 8126f3d3-f87f-488f-b22f-30f26d4def72
-supertype(Rhombi)                 
+supertype(Rhombus)                 
 
 # ╔═╡ 532d6312-518d-4d2b-be31-54eaa9e6fbe1
-supertype(EquilateralTriangles)
+supertype(EquilateralTriangle)
 
 # ╔═╡ 93ec3ff3-334e-45a5-a071-af476abb5042
-supertype(IsoscelesRightTriangles)
+supertype(IsoscelesRightTriangle)
 
 # ╔═╡ 17ba8117-e170-4ac0-a426-c913dc20b65d
-supertype(Squares)                
+supertype(Square)                
 
 # ╔═╡ 0fde6aae-d47a-439b-84e3-229fc221cfdb
 md"
@@ -300,10 +302,10 @@ md"
 "
 
 # ╔═╡ ad5855d6-deb9-4489-b832-7636953230e8
-typeof(Polygons)
+typeof(Polygon)
 
 # ╔═╡ 709c6ceb-dce6-4076-83ad-6de86ee9baee
-typeof(Squares)
+typeof(Square)
 
 # ╔═╡ 441376de-c244-47f8-95d0-29fd184e51af
 md"
@@ -312,43 +314,43 @@ md"
 "
 
 # ╔═╡ 0cd48b25-2e2c-4f07-b21f-efc966cd44ed
-subtypes(Polygons)
+subtypes(Polygon)
 
 # ╔═╡ d3ee78a8-7d54-40a4-aebc-3badc4492200
-subtypes(Triangles)
+subtypes(Triangle)
 
 # ╔═╡ 126eeefd-fce9-43e6-9368-1b5f7acdf998
-subtypes(Quadrilaterals)
+subtypes(Quadrilateral)
 
 # ╔═╡ e1c0e36c-75f2-4c90-8d89-2e7c7fa72fc1
-subtypes(Kites)                
+subtypes(Kite)                
 
 # ╔═╡ 0f99f7f4-283a-4436-9699-21e72e366cff
-subtypes(IsoscelesTriangles)   
+subtypes(IsoscelesTriangle)   
 
 # ╔═╡ 8eb6a7da-f55f-4a94-bdb8-f3b5b588336d
-subtypes(RightTriangles)
+subtypes(RightTriangle)
 
 # ╔═╡ a1316749-2b52-47d5-a14f-3dc658782809
-subtypes(Trapezoids)
+subtypes(Trapezoid)
 
 # ╔═╡ 1482b66d-b644-4103-bd68-f207a726376e
-subtypes(Parallelograms)      
+subtypes(Parallelogram)      
 
 # ╔═╡ 18105544-4995-4be1-b9f9-4d6cdd874259
-subtypes(Rectangles)
+subtypes(Rectangle)
 
 # ╔═╡ 789dc614-ebb6-41ad-a8ff-c9d71a9e4f27
-subtypes(Rhombi)
+subtypes(Rhombus)
 
 # ╔═╡ e0de8e5c-c82f-40d8-ae30-399941a6061c
-subtypes(EquilateralTriangles)
+subtypes(EquilateralTriangle)
 
 # ╔═╡ f83f115d-cc4d-4043-8aa7-f4ece85f44c1
-subtypes(IsoscelesRightTriangles)
+subtypes(IsoscelesRightTriangle)
 
 # ╔═╡ d8ff346e-ea81-4453-a957-bd23639d8b84
-subtypes(Squares)
+subtypes(Square)
 
 # ╔═╡ 0024bd22-4b40-4f16-b143-aedf7dbbac76
 md"
@@ -362,61 +364,61 @@ md"
 subtypes(Shape), typeof(Shape), supertype(Shape)
 
 # ╔═╡ e735872f-de04-4b9b-a40c-3f2d8747b10c
-begin
+begin 
 	#-------------------------------------------------------------------------------
-	struct Polygon <: Polygons  
-		xs::Array{Number}; ys::Array{Number}                  # field
-		description::String                                   # field
-		shape::Shape                                          # field
-	end # Polygon
+	struct Polygons <: Polygon                  # concrete type <: abstract type
+		xs::Array{Number}; ys::Array{Number}                  # field 1, 2
+		description::String                                   # field 3
+		shape::Shape                                          # field 4
+	end # Polygons
 	#-------------------------------------------------------------------------------
-	struct Triangle <: Triangles
-		xs; ys; description::String; shape::Shape             # fields
-	end # Triangle
+	struct Triangles <: Triangle                # concrete type <: abstract type
+		xs; ys; description::String; shape::Shape             # fields 1 - 4
+	end # Triangles
 	#-------------------------------------------------------------------------------
-	struct Quadrilateral <: Quadrilaterals
-		xs; ys; description::String; shape::Shape             # fields
-	end # Quadrilateral
+	struct Quadrilaterals <: Quadrilateral      # concrete type <: abstract type
+		xs; ys; description::String; shape::Shape             # fields 1 - 4
+	end # Quadrilaterals
 	#-------------------------------------------------------------------------------
-	struct Trapezoid <: Trapezoids
-		xs; ys; description::String; shape::Shape             # fields
-	end # Trapezoid
+	struct Trapezoids <: Trapezoid              # concrete type <: abstract type
+		xs; ys; description::String; shape::Shape             # fields 1 - 4
+	end # Trapezoids
 	#-------------------------------------------------------------------------------
-	struct Kite <: Kites
-		xs; ys; description::String; shape::Shape             # fields
-	end # Kite
+	struct Kites <: Kite
+		xs; ys; description::String; shape::Shape             # fields 1 - 4
+	end # Kites
 	#-------------------------------------------------------------------------------
-	struct Parallelogram <: Parallelograms
+	struct Parallelograms <: Parallelogram
 		xs; ys; description::String; shape::Shape             # fields
 	end # Parallelogram
 	#-------------------------------------------------------------------------------
-	struct IsoscelesTriangle <: IsoscelesTriangles
+	struct IsoscelesTriangles <: IsoscelesTriangle
 		xs; ys; description::String; shape::Shape             # fields
-	end # IsoscelesTriangle
+	end # IsoscelesTriangles
 	#-------------------------------------------------------------------------------
-	struct RightTriangle <: RightTriangles
+	struct RightTriangles <: RightTriangle
 		xs; ys; description::String; shape::Shape             # fields
-	end # RightTriangle
+	end # RightTriangles
 	#-------------------------------------------------------------------------------
-	struct Rectangle <: Rectangles
+	struct Rectangles <: Rectangle
 		xs; ys; description::String; shape::Shape             # fields
-	end # Rectangle
+	end # Rectangles
 	#-------------------------------------------------------------------------------
-	struct Rhombus <: Rhombi
+	struct Rhombi <: Rhombus
 		xs; ys; description::String; shape::Shape             # fields
-	end # Rhombus
+	end # Rhombi
 	#-------------------------------------------------------------------------------
-	struct EquilateralTriangle <: EquilateralTriangles
+	struct EquilateralTriangles <: EquilateralTriangle
 		xs; ys; description::String; shape::Shape             # fields
-	end # EquilateralTriangle
+	end # EquilateralTriangles
 	#-------------------------------------------------------------------------------
-	struct IsoscelesRightTriangle <: IsoscelesRightTriangles
+	struct IsoscelesRightTriangles <: IsoscelesRightTriangle
 		xs; ys; description::String; shape::Shape             # fields
-	end # IsoscelesRightTriangle
+	end # IsoscelesRightTriangles
 	#-------------------------------------------------------------------------------
-	struct Square <: Squares
+	struct Squares <: Square
 		xs; ys; description::String; shape::Shape             # fields
-	end # Square
+	end # Squares
 end
 
 # ╔═╡ 79a5aabc-220f-4193-bedf-c1e55a0fb5e3
@@ -430,59 +432,59 @@ function makeInstance(concreteType::DataType, xs::Vector, ys::Vector, instanceId
 	# parameter concreteType must be a concrete type not an abstract one !
 	# xs, ys, instanceId, and are fields of the concrete type
 	# concreteType(xs, ys, instanceId), Shape(xs, ys)
-	concreteType(xs, ys, instanceId, Shape(xs, ys))
+	concreteType(xs, ys, instanceId, Shape(xs, ys)) # instance generator 
 end # function makeInstance
 
 # ╔═╡ c8e6be77-ad60-40f4-95ed-996c6e5e5ef8
 md"
 ---
-###### 4.4 $describe$-*Method* for *Abstract* Types
-The $describe$-*function* has 13 *method*s (each for an *abstarct* type). This has been achieved with Julia's *multiple dispatch*. 
+###### 4.4 $describeYourself$-*Method* for *Abstract* Types
+The $describeYourself$-*function* has 13 (!) *method*s (each for an *abstract* type). This has been achieved by Julia's *multiple dispatch*. 
 "
 
 # ╔═╡ 5e7cbf6a-5410-425a-a49f-5ca2f57b528b
 begin
 	#--------------------------------------------------------------------------------
-	describe(polygon::Polygons) =
-		"This is the description of the abstract type *Polygons*: In geometry, a [polygon](https://en.wikipedia.org/wiki/Polygon) (/ˈpɒlɪɡɒn/) is a plane figure that is described by a finite number of straight line segments connected to form a closed polygonal chain (or polygonal circuit)."
+	describeYourself(polygon::Polygon) =
+		"This is the description of the abstract type *Polygon*: In geometry, a [polygon](https://en.wikipedia.org/wiki/Polygon) (/ˈpɒlɪɡɒn/) is a plane figure that is described by a finite number of straight line segments connected to form a closed polygonal chain (or polygonal circuit)."
 	#--------------------------------------------------------------------------------
-	describe(triangle::Triangles) = "[Description](https://en.wikipedia.org/wiki/Polygon#Area) of the abstract type *Triangles*: The simplest polygon which can exist in the Euclidean plane. Can tile the plane."
-	describe(quadrilateral::Quadrilaterals) = "[Description](https://en.wikipedia.org/wiki/Polygon#Area) of the abstract type *Quadrilaterals*: The simplest polygon which can cross itself; the simplest polygon which can be concave; the simplest polygon which can be non-cyclic. Can tile the plane."
+	describeYourself(triangle::Triangle) = "[Description](https://en.wikipedia.org/wiki/Polygon#Area) of the abstract type *Triangle*: The simplest polygon which can exist in the Euclidean plane. Can tile the plane."
+	describeYourself(quadrilateral::Quadrilateral) = "[Description](https://en.wikipedia.org/wiki/Polygon#Area) of the abstract type *Quadrilateral*: The simplest polygon which can cross itself; the simplest polygon which can be concave; the simplest polygon which can be non-cyclic. Can tile the plane."
 	#--------------------------------------------------------------------------------
-	describe(isoscelesTriangle::IsoscelesTriangles) = "This is the description of the abstract type *IsosceleTriangles*"
-	describe(rightTriangle::RightTriangles) = "This is the description of the abstract type *RightTriangles*"
-	describe(equilateralTriangle::EquilateralTriangles) = "This is the description of the abstract type *EquilateralTriangles*"
-	describe(isoscelesRightTriangle::IsoscelesRightTriangles) = "This is the description of the abstract type *IsosceleRightTriangles*"
+	describeYourself(isoscelesTriangle::IsoscelesTriangle) = "This is the description of the abstract type *IsosceleTriangle*"
+	describeYourself(rightTriangle::RightTriangle) = "This is the description of the abstract type *RightTriangle*"
+	describeYourself(equilateralTriangle::EquilateralTriangle) = "This is the description of the abstract type *EquilateralTriangle*"
+	describeYourself(isoscelesRightTriangle::IsoscelesRightTriangle) = "This is the description of the abstract type *IsosceleRightTriangle*"
 	#--------------------------------------------------------------------------------
-	describe(trapezoid::Trapezoids) = "This is the description of the abstract type *Trapezoids*"
-	describe(kite::Kites) = "This is the description of the abstract type *Kites*"
-	describe(parallelogram::Parallelograms) = "This is the description of the abstract type *Parallelograms*"
-	describe(rectangle::Rectangles) = "This is the description of the abstract type *Rectangles*"
-	describe(rhombus::Rhombi) = "This is the description of the abstract type *Rhombi*"
-	describe(square::Squares) = "This is the description of the abstract type *Squares*"
+	describeYourself(trapezoid::Trapezoid) = "This is the description of the abstract type *Trapezoid*"
+	describeYourself(kite::Kite) = "This is the description of the abstract type *Kite*"
+	describeYourself(parallelogram::Parallelogram) = "This is the description of the abstract type *Parallelogram*"
+	describeYourself(rectangle::Rectangle) = "This is the description of the abstract type *Rectangle*"
+	describeYourself(rhombus::Rhombus) = "This is the description of the abstract type *Rhombus*"
+	describeYourself(square::Square) = "This is the description of the abstract type *Square*"
 	#--------------------------------------------------------------------------------
 end
 
 # ╔═╡ 6d3f35ba-f83d-4cf7-975a-b7b08e9d6771
 md"
 ---
-#####  5. Area-functions for *Abstract* Types: Polygons, Triangles, Rectangles, Squares ([Shoelace-formula](https://en.wikipedia.org/wiki/Shoelace_formula))
+#####  5. Area-functions for *Abstract* Types: Polygon, Triangle, Rectangle, Square ([Shoelace-formula](https://en.wikipedia.org/wiki/Shoelace_formula))
 
-- The area calculation of all *Quadrilaterals* besides *Squares* is *delegated* to the supertype *Polygon*. 
+- The area calculation of each *Quadrilateral* besides *Square* is *delegated* to the *abstract* supertype *Polygon*. 
 
-- The area of *Squares* is calculated by the special area method for *Square*:
+- The area of *Square* is calculated by the *local* area method for *Square*:
 
 $A = a^2\;\;; A \text{ = area of square with side } a$
 
 $\;$
 
-- The area of *Rectangle* is calculated by the special area method for *Rectangle*:
+- The area of *Rectangle* is calculated by the *local* area method for *Rectangle*:
 
 $A = a\cdot b\;\;; A \text{ = area of square with sides } a, b$
 
 $\;$
 
-- The area calculation of *Triangles* and all subtypes of *Triangles* is delegated to the method of type *Triangle*. The method of this calculates the area by [*Heron's*](https://en.wikipedia.org/wiki/Heron%27s_formula) formula:
+- The area calculation of *Triangle* and all subtypes of *Triangle* is delegated to the method of *abstract* type *Triangle*. The method of this calculates the area by [*Heron's*](https://en.wikipedia.org/wiki/Heron%27s_formula) formula:
 
 $\;$
 
@@ -497,7 +499,7 @@ $\;$
 
 Calculating polygon aerea with [Shoelace-algorithm](https://en.wikipedia.org/wiki/Shoelace_formula) is like following:
 - The $x,y$-coordinates are read off *counter-clockwise* (*positive* orientation) from the polygon figures.
-- For *subtypes* the $area$-method is inherited from *abstract* type *Polygons*.
+- For some *subtypes* of the *abstract* type *Polygon* the $area$-method is *inherited* from *abstract* type *Polygon* or the the $area$-calculation is *delegated* to the *abstract* type *Polygon*.
 
 $A = \frac{1}{2}\sum_{i=0}^{n-1}\left( x_iy_{i+1}-x_{i+1}y_i\right) = \frac{1}{2}\sum_{i=0}^{n-1}\begin{vmatrix}
      x_i     & y_i     \\ 
@@ -523,17 +525,17 @@ IntOrFloat = Union{Integer, AbstractFloat}
 begin
 	#-----------------------------------------------------------------------------
 	# shoelace algorithm for computating polygon areas
-	function area(geometricObject::Polygons)
+	function area(geometricObject::Polygon)
 		let xs = geometricObject.xs; ys = geometricObject.ys
 			description = geometricObject.description
 			n = length(xs)              # because xs[n] == xs[1]
 			area = (1/2)*sum([det([xs[i] ys[i]; xs[i+1] ys[i+1]]) for i in 1:n-1])
-			(area=area, algorithm=Polygons, instance=description)
+			(area=area, algorithm=Polygon, instance=description)
 		end # let 
 	end # area
 	#-----------------------------------------------------------------------------
 	# Heron's formula for computating triangle areas
-	function area(geometricObject::Triangles)
+	function area(geometricObject::Triangle)
 		#--------------------------------------------------------------
 		function sideLength(x1, x2, y1, y2)
 			sqrt((x1 - x2)^2 + (y1 - y2)^2)
@@ -547,14 +549,14 @@ begin
 			c = sideLength(xs[3], xs[4], ys[3], ys[4])
 			s = (a + b + c)/2.0
 			area = sqrt(s*(s-a)*(s-b)*(s-c))
-			(area=area, algorithm=Triangles, instance=description)
+			(area=area, algorithm=Triangle, instance=description)
 		end # let 
 		#--------------------------------------------------------------
 	end # area
 	#-----------------------------------------------------------------------------
-	# The area calculation of Rectangles is *not* delegated to Polygons;
+	# The area calculation of Rectangle is *not* delegated to Polygon;
 	#   instead a local method is used
-	function area(geometricObject::Rectangles)
+	function area(geometricObject::Rectangle)
 		#--------------------------------------------------------------
 		function sideLength(x1, x2, y1, y2)
 			sqrt((x1 - x2)^2 + (y1 - y2)^2)
@@ -567,13 +569,13 @@ begin
 			a = sideLength(xs[1], xs[2], ys[1], ys[2])
 			b = sideLength(xs[2], xs[3], ys[2], ys[3])
 			area = a * b
-			(area=area, algorithm=Rectangles, instance=description)
+			(area=area, algorithm=Rectangle, instance=description)
 		end # let 
 	end # area
 	#-------------------------------------------------------------------------------
-	# The area calculation of Squares is *not* delegated to the supertype Polygons;
+	# The area calculation of Square is *not* delegated to the supertype Polygon;
 	#   instead a local method is used
-	function area(geometricObject::Squares)
+	function area(geometricObject::Square)
 		#--------------------------------------------------------------
 		function sideLength(x1, x2, y1, y2)
 			sqrt((x1 - x2)^2 + (y1 - y2)^2)
@@ -585,7 +587,7 @@ begin
 			n = length(xs) == (4+1) ? 5 : error("n =/= (4+1) because xs[n] == xs[1]")
 			a = sideLength(xs[1], xs[2], ys[1], ys[2])
 			area = a^2
-			(area=area, algorithm=Squares, instance=description)
+			(area=area, algorithm=Square, instance=description)
 		end # let 
 	end # area
 	#-------------------------------------------------------------------------------
@@ -594,9 +596,9 @@ end # begin
 # ╔═╡ d788ce23-3798-4330-869a-6e7b77ddb203
 md"
 ---
-###### 6.1 [Polygons](https://en.wikipedia.org/wiki/Polygon)
+###### 6.1 [Polygon](https://en.wikipedia.org/wiki/Polygon)
 
-The *area* of Polgons will be computed here by *Gauß'* [*shoelace*-algorithm](https://en.wikipedia.org/wiki/Shoelace_formula).
+The *area* of Polgons will be computed here by *Gauß'* [*Shoelace*-algorithm](https://en.wikipedia.org/wiki/Shoelace_formula).
 
 For this [example](https://en.wikipedia.org/wiki/Shoelace_formula) of an *irregular* pentagon the calculation is as follows:
 
@@ -634,18 +636,21 @@ $\;$
 typeof(Polygon), typeof(Polygons)
 
 # ╔═╡ fdf3bc30-c88d-40e8-a464-45f8640d54c3
-let # myIegularPentagon = Polygon: *no* delegation !
-	myIrregularPentagon = 
-		makeInstance(Polygon, [1, 3, 7, 4, 8, 1], [6, 1, 2, 4, 5, 6], "myIrregularPentagon")
-		display(describe(myIrregularPentagon)); println()
-		display(area(myIrregularPentagon::Polygons))   # the area should be 16.5 
-		plot(myIrregularPentagon.shape, aspect_ratio=:equal, xlim=[0, 9], ylim=[0, 8], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(myIrregularPentagon::Polygon)")
+let # area of myIrregularPentagon6 as of type Polygons
+	#   *no* delegation of 'area' calculation to supertype !
+	myIrregularPentagon6 = 
+		makeInstance(
+			Polygons, 
+			[1, 3, 7, 4, 8, 1], [6, 1, 2, 4, 5, 6], "myIrregularPentagon6")
+		display(describeYourself(myIrregularPentagon6)); println()
+		display(area(myIrregularPentagon6::Polygons))   # the area should be 16.5 
+		plot(myIrregularPentagon6.shape, aspect_ratio=:equal, xlim=[0, 9], ylim=[0, 8], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(myIrregularPentagon6::Polygons)=16.5", titlefontsize=12)
 end # let
 
 # ╔═╡ c99a9b91-21e7-480f-b7cc-d902265bf84c
 md"
 ---
-###### 6,2 Triangles
+###### 6.2 Triangle
 The area calculation of all *subtypes* of *Triangles* is delegated to the method of type *Triangle*.
 $area = \frac{b \cdot h}{2}$
 
@@ -659,12 +664,13 @@ $\;$
 "
 
 # ╔═╡ f375d8d1-451b-445c-ae11-561f8cafde49
-let # myTriangle as Triangle: *no* delegation of 'area' method !
-	myTriangle = 
-		makeInstance(Triangle, [0, 3, 1, 0], [0, 0, 2, 0], "myTriangle")
-		display(describe(myTriangle)); println()
-		display(area(myTriangle::Triangles))         # the area should be 3 
-		plot(myTriangle.shape, aspect_ratio=:equal, xlim=[-0.5, 3.5], ylim=[-0.5, 2.5], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(myTriangle::Triangle)")
+let # area of myTriangle3 as type of Triangles
+	#   *no* delegation of 'area' calculation to supertype !
+	myTriangle3 = 
+		makeInstance(Triangles, [0, 3, 1, 0], [0, 0, 2, 0], "myTriangle3")
+		display(describeYourself(myTriangle3)); println()
+		display(area(myTriangle3::Triangles))         # the area should be 3 
+		plot(myTriangle3.shape, aspect_ratio=:equal, xlim=[-0.5, 3.5], ylim=[-0.5, 2.5], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(myTriangle3::Triangles)=3.0", titlefontsize=12)
 		annotate!(1.5, -0.15, L"a", 12)
 		annotate!(2.2,  1.0, L"b", 12)
 		annotate!(0.35,  1.0, L"c", 12)
@@ -673,7 +679,7 @@ end # let
 # ╔═╡ c4602a15-8560-455c-b689-464cea095916
 md"
 ---
-###### Isosceles triangles
+###### Isosceles Triangle
 $area = \frac{b \cdot h}{2}$
 and for this example:
 
@@ -685,19 +691,20 @@ $\;$
 "
 
 # ╔═╡ e0fc90db-e25d-4885-8ce0-628004fbaf25
-let # area of isoscelesTriangle: delegation of 'area' method to Triangles !
-	myIsoscelesTriangle = 
-		makeInstance(IsoscelesTriangle, [0, 2, 1, 0], [0, 0, 4, 0], "myIsoscelesTriangle")
-		display(describe(myIsoscelesTriangle)); println()
+let # area of myIsoscelesTriangle4
+	#   delegation of 'area' calculation to supertype Triangle !
+	myIsoscelesTriangle4 = 
+		makeInstance(IsoscelesTriangles, [0, 2, 1, 0], [0, 0, 4, 0], "myIsoscelesTriangle4")
+		display(describeYourself(myIsoscelesTriangle4)); println()
 		# the area should be 4
-		display(area(myIsoscelesTriangle::IsoscelesTriangles))  
-		plot(myIsoscelesTriangle.shape, aspect_ratio=:equal, xlim=[-0.5, 2.5], ylim=[-0.5, 4.5], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(myIsoscelesTriangle::IsoscelesTriangles)")
+		display(area(myIsoscelesTriangle4::IsoscelesTriangles))  
+		plot(myIsoscelesTriangle4.shape, aspect_ratio=:equal, xlim=[-0.5, 2.5], ylim=[-0.5, 4.5], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(myIsoscelesTriangle4::IsoscelesTriangles)=4.0", titlefontsize=12)
 end # let
 
 # ╔═╡ 8a33ed3a-9037-44c1-aa60-6e47549c4102
 md"
 ---
-###### Equilateral triangles
+###### Equilateral Triangle
 $area = \frac{b \cdot h}{2}$
 
 for this example *area* is:
@@ -710,20 +717,20 @@ $\;$
 "
 
 # ╔═╡ e725c74b-6885-4d8f-a8f5-0d4c89eb6571
-let # area of EquilateralTriangle
-    # delegation of 'area' computation to Triangles !
-	myEquilateralTriangle = 
-		makeInstance(EquilateralTriangle, [0, 1, 1/2, 0], [0, 0, sqrt(3/4), 0], "myEquilateralTriangle")
-	    display(describe(myEquilateralTriangle)); println()
-		# the area should be 4.33..
-		display(area(myEquilateralTriangle::EquilateralTriangles))  
-		plot(myEquilateralTriangle.shape, aspect_ratio=:equal, xlim=[-0.5, 1.5], ylim=[-0.5, 1.5], fill=:cornflowerblue, opacity=0.4, legend =false, title="$area(myEquilateralTriangle::EquilateralTriangles)")
+let # area of myEquilatTriangle43
+    #   delegation of 'area' calculation to supertype Triangle !
+	myEquilatTriangle43 = 
+		makeInstance(EquilateralTriangles, [0, 1, 1/2, 0], [0, 0, sqrt(3/4), 0], "myEquilateralTriangle43")
+	    display(describeYourself(myEquilatTriangle43)); println()
+		# the area should be 0.433...
+		display(area(myEquilatTriangle43::EquilateralTriangles))  
+		plot(myEquilatTriangle43.shape, aspect_ratio=:equal, xlim=[-0.5, 1.5], ylim=[-0.5, 1.5], fill=:cornflowerblue, opacity=0.4, legend =false, title="$area(myEquilatTriangle43::EquilatTriangles)=0.433...", titlefontsize=12)
 end # let
 
 # ╔═╡ a62e7c3f-02af-40e8-a54b-92a317d41539
 md"
 ---
-###### Right triangles
+###### Right Triangle
 $area = \frac{b \cdot h}{2}$
 and for this example:
 
@@ -735,20 +742,20 @@ $\;$
 "
 
 # ╔═╡ 5f7f4641-d07f-4071-af75-1ee142df5da1
-let # area of rightTriangle
-    # delegation of 'area' computation to Triangles !
-	myRightTriangle = 
-		makeInstance(RightTriangle, [0, 4, 1/4, 0], [0, 0, sqrt(15)/4, 0], "myRightTriangle")
-	    display(describe(myRightTriangle)); println()
+let # area of myRightTriangle193
+    #   delegation of 'area' calculation to supertype Triangle !
+	myRightTriangle193 = 
+		makeInstance(RightTriangles, [0, 4, 1/4, 0], [0, 0, sqrt(15)/4, 0], "myRightTriangle193")
+	    display(describeYourself(myRightTriangle193)); println()
 		# the area should be 1.936..
-		display(area(myRightTriangle::RightTriangle))  
-		plot(myRightTriangle.shape, aspect_ratio=:equal, xlim=[-0.5, 4.5], ylim=[-0.5, 1.5], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(myRightTriangle::RightTriangles)")
+		display(area(myRightTriangle193::RightTriangles))  
+		plot(myRightTriangle193.shape, aspect_ratio=:equal, xlim=[-0.5, 4.5], ylim=[-0.5, 1.5], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(myRightTriangle193::RightTriangles)=1.936", titlefontsize=12)
 end # let
 
 # ╔═╡ a4b5f920-5b21-4aec-be57-669cf0e604c4
 md"
 ---
-###### Isosceles right triangles
+###### Isosceles Right Triangle
 $area = \frac{b \cdot h}{2}$
 and for this example:
 
@@ -760,33 +767,33 @@ $\;$
 "
 
 # ╔═╡ df5b608d-8fa1-4139-8132-e0576990c322
-let # area of IsoscelesRightTriangle
-    # delegation of 'area' computation to Triangles !
-	myIsoscelesRightTriangle = 
-		makeInstance(IsoscelesRightTriangle, [0, sqrt(2), (1/2)*sqrt(2), 0], [0,    0, sqrt(1/2), 0], "myIsoscelesRightTriangle")
-	    display(describe(myIsoscelesRightTriangle)); println()
+let # area of myIsoscelesRightTriangle12
+    #   delegation of 'area' calculation to supertype Triangle !
+	myIsoscelesRightTriangle12 = 
+		makeInstance(IsoscelesRightTriangles, [0, sqrt(2), (1/2)*sqrt(2), 0], [0,    0, sqrt(1/2), 0], "myIsoscelesRightTriangle12")
+	    display(describeYourself(myIsoscelesRightTriangle12)); println()
 		# the area should be 1/2
-		display(area(myIsoscelesRightTriangle::IsoscelesRightTriangle))  
-		plot(myIsoscelesRightTriangle.shape, aspect_ratio=:equal, xlim=[-0.5, 2.0], ylim=[-0.5, 1.5], fill=:cornflowerblue, opacity=0.4, title="$area(myIsoscelesRightTriangle::IsoscelesRightTriangles)")
+		display(area(myIsoscelesRightTriangle12::IsoscelesRightTriangles))  
+		plot(myIsoscelesRightTriangle12.shape, aspect_ratio=:equal, xlim=[-0.5, 2.0], ylim=[-0.5, 1.5], fill=:cornflowerblue, opacity=0.4, title="$area(myIsoscelesRightTriangle12::IsoscelesRightTriangles)=1/2", titlefontsize=12)
 end # let
 
 # ╔═╡ af23c5f9-87f3-47f0-b3c2-0fe59d74c33d
 md"
 ---
-###### 6.3 Quadrilaterals
+###### 6.3 Quadrilateral
 
 The area calculation of all *Quadrilaterals* besides *Squares* is *delegated* to the supertype *Polygon*. The area of *Squares* is calculated by the special area method for *Square*.
 "
 
 # ╔═╡ 6a5110b6-6f26-45cd-b3d4-34b41ab8bc2b
-let # area of myQuadrilateral 
-    # delegation of 'area' computation to Polygons !
-	myQuadrilateral = 
-		makeInstance(Quadrilateral, [0, 5, 4, 2, 0], [0, 0, 2, 3, 0], "myQuadrilateral")
-	    display(describe(myQuadrilateral)); println()
+let # area of myQuadrilateral9
+    # delegation of 'area' computation to supertype Polygon !
+	myQuadrilateral9 = 
+		makeInstance(Quadrilaterals, [0, 5, 4, 2, 0], [0, 0, 2, 3, 0], "myQuadrilateral9")
+	    display(describeYourself(myQuadrilateral9)); println()
 		# the area should be 9
-		display(area(myQuadrilateral::Quadrilateral))  
-		plot(myQuadrilateral.shape, aspect_ratio=:equal, xlim=[-0.5, 5.5], ylim=[-0.5, 3.5], fill=:cornflowerblue, opacity=0.4, title="$area(myQuadrilateral::Quadrilaterals)")
+		display(area(myQuadrilateral9::Quadrilaterals))  
+		plot(myQuadrilateral9.shape, aspect_ratio=:equal, xlim=[-0.5, 5.5], ylim=[-0.5, 3.5], fill=:cornflowerblue, opacity=0.4, title="$area(myQuadrilateral9::Quadrilaterals)=9.0", titlefontsize=12)
 end # let
 
 # ╔═╡ 56832f9a-db46-4c9e-b687-e1d8b90c5aae
@@ -808,14 +815,14 @@ $\;$
 "
 
 # ╔═╡ 26586f25-95d1-4fe9-8bfa-d4d620f10e03
-let # area of myTrapezoid 
-    # delegation of 'area' computation to Polygons !
-	myTrapezoid = 
-		makeInstance(Trapezoid, [0, 5, 3, 1, 0], [0, 0, 2, 2, 0], "myTrapezoid")
-	    display(describe(myTrapezoid)); println()
+let # area of myTrapezoid7
+    # delegation of 'area' computation to supertype Polygon !
+	myTrapezoid7 = 
+		makeInstance(Trapezoids, [0, 5, 3, 1, 0], [0, 0, 2, 2, 0], "myTrapezoid")
+	    display(describeYourself(myTrapezoid7)); println()
 		# the area should be 7
-		display(area(myTrapezoid::Trapezoid))  
-		plot(myTrapezoid.shape, aspect_ratio=:equal, xlim=[-0.5, 5.5], ylim=[-0.5, 3.5], fill=:cornflowerblue, opacity=0.4, title="$area(myTrapezoid::Trapezoids)")
+		display(area(myTrapezoid7::Trapezoids))  
+		plot(myTrapezoid7.shape, aspect_ratio=:equal, xlim=[-0.5, 5.5], ylim=[-0.5, 3.5], fill=:cornflowerblue, opacity=0.4, title="$area(myTrapezoid7::Trapezoids)=7.0", titlefontsize=12)
 end # let
 
 # ╔═╡ 0987be73-36b5-44ea-bfa7-cdb5e83cb476
@@ -833,14 +840,14 @@ $\;$
 "
 
 # ╔═╡ f9833ab8-3ce6-42ff-a7cc-53c17e290c2a
-let # area of Parallelogram
-    # delegation of 'area' computation to Polygons !
-	myParallelogram = 
-		makeInstance(Parallelogram, [0, 3, 4, 1, 0], [0, 0, 1, 1, 0], "myParallelogram")
-	    display(describe(myParallelogram)); println()
+let # area of myParallelogram3
+    # delegation of 'area' computation to supertype Polygon !
+	myParallelogram3 = 
+		makeInstance(Parallelograms, [0, 3, 4, 1, 0], [0, 0, 1, 1, 0], "myParallelogram3")
+	    display(describeYourself(myParallelogram3)); println()
 		# the area should be 3
-		display(area(myParallelogram::Parallelogram))  
-		plot(myParallelogram.shape, aspect_ratio=:equal, xlim=[-0.5, 4.5], ylim=[-0.5, 1.5], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(myParallelogram::Parallelograms)")
+		display(area(myParallelogram3::Parallelograms))  
+		plot(myParallelogram3.shape, aspect_ratio=:equal, xlim=[-0.5, 4.5], ylim=[-0.5, 1.5], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(myParallelogram3::Parallelograms)=3.0", titlefontsize=12)
 end # let
 
 # ╔═╡ 6cea68b7-17e3-4e6b-947c-30e1fcda32f5
@@ -858,14 +865,14 @@ $\;$
 "
 
 # ╔═╡ 94421dd2-9daa-4f61-9b26-be252a076bc2
-let # area of myRectangle
-    # delegation of 'area' computation to Polygons !
-	myRectangle = 
-		makeInstance(Rectangle, [0, 3, 3, 0, 0], [0, 0, 1, 1, 0], "myRectangle")
-	    display(describe(myRectangle)); println()
+let # area of myRectangle3
+    # *no* delegation of 'area' computation !
+	myRectangle3 = 
+		makeInstance(Rectangles, [0, 3, 3, 0, 0], [0, 0, 1, 1, 0], "myRectangle3")
+	    display(describeYourself(myRectangle3)); println()
 		# the area should be 3
-		display(area(myRectangle::Rectangle))  
-		plot(myRectangle.shape, aspect_ratio=:equal, xlim=[-0.5, 3.5], ylim=[-0.5, 1.5], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(myRectangle::Rectangles)")
+		display(area(myRectangle3::Rectangles))  
+		plot(myRectangle3.shape, aspect_ratio=:equal, xlim=[-0.5, 3.5], ylim=[-0.5, 1.5], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(myRectangle3::Rectangles)=3.0", titlefontsize=12)
 	    annotate!(1.5, -0.1, L"a", 12)
 		annotate!(3.1, 0.5, L"b", 12)
 end # let
@@ -890,20 +897,20 @@ $\;$
 
 # ╔═╡ 81ed0660-d009-4361-b517-a6f3ed08799c
 let # area of mySquare
-    # *no* delegation of 'area' computation to Polygons !
-	mySquare = 
-		makeInstance(Square, [0, 1.5, 1.5, 0, 0], [0, 0, 1.5, 1.5, 0], "mySquare")
-	    display(describe(mySquare)); println()
+    # *no* delegation of 'area' computation !
+	mySquare225 = 
+		makeInstance(Squares, [0, 1.5, 1.5, 0, 0], [0, 0, 1.5, 1.5, 0], "mySquare")
+	    display(describeYourself(mySquare225)); println()
 		# the area should be 2.25
-		display(area(mySquare::Square))  
-		plot(mySquare.shape, aspect_ratio=:equal, xlim=[-0.5, 2.0], ylim=[-0.5, 2.0], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(mySquare::Squares)")
+		display(area(mySquare225::Squares))  
+		plot(mySquare225.shape, aspect_ratio=:equal, xlim=[-0.5, 2.0], ylim=[-0.5, 2.0], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(mySquare225::Squares)=2.25", titlefontsize=12)
 		annotate!(0.75, -0.1, L"a", 12)
 end # let
 
 # ╔═╡ 81d1d56c-0497-4b47-80e1-367ee0858224
 md"
 ---
-###### Rhombi
+###### Rhombus
 $area = \frac{1}{2} p \cdot q \text{ where } p, q \text{ are diagonals. }$
 and for this example:
 
@@ -916,13 +923,13 @@ $\;$
 
 # ╔═╡ 84ca45f7-ab73-45a4-be97-1b0d7897a228
 let # area of unit Kite (=rhombus)
-    # delegation of 'area' computation to Polygon
-	myRhombus = 
-		makeInstance(Rhombus, [0, 1, 2, 1, 0], [2, 0, 2, 4, 2], "myRhombus")
-	    display(describe(myRhombus)); println()
+    # delegation of 'area' computation to supertype Polygon
+	myRhombus4 = 
+		makeInstance(Rhombi, [0, 1, 2, 1, 0], [2, 0, 2, 4, 2], "myRhombus")
+	    display(describeYourself(myRhombus4)); println()
 		# the area should be 4
-		display(area(myRhombus::Rhombus))  
-		plot(myRhombus.shape, aspect_ratio=:equal, xlim=[-0.5, 2.5], ylim=[-0.5, 4.5], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(myRhombus::Rhombi)")
+		display(area(myRhombus4::Rhombi))  
+		plot(myRhombus4.shape, aspect_ratio=:equal, xlim=[-0.5, 2.5], ylim=[-0.5, 4.5], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(myRhombus4::Rhombi)=4.0", titlefontsize=12)
 end # let
 
 # ╔═╡ f1c19eb3-6fc9-4516-b913-19244b230af3
@@ -940,14 +947,14 @@ $\;$
 "
 
 # ╔═╡ 6beeac50-5249-4bdb-8086-ce2c74b162b2
-let # area of unit Kite (=rhombus)
-    # delegation of 'area' computation to Polygon
-	myKite = 
-		makeInstance(Kite, [1, 2, 1, 0, 1], [0, 3, 4, 3, 0], "myRhombus")
-	    display(describe(myKite)); println()
+let # area of myKite4
+    # delegation of 'area' computation to supertype Polygon
+	myKite4 = 
+		makeInstance(Kites, [1, 2, 1, 0, 1], [0, 3, 4, 3, 0], "myKite4")
+	    display(describeYourself(myKite4)); println()
 		# the area should be 4
-		display(area(myKite::Kite))  
-		plot(myKite.shape, aspect_ratio=:equal, xlim=[-0.5, 2.5], ylim=[-0.5, 4.5], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(myKite::Kites)")
+		display(area(myKite4::Kites))  
+		plot(myKite4.shape, aspect_ratio=:equal, xlim=[-0.5, 2.5], ylim=[-0.5, 4.5], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(myKite4::Kites)=4.0", titlefontsize=12)
 end # let
 
 # ╔═╡ 021f10cd-2b86-4157-8146-49582e0f3d3d
@@ -958,16 +965,16 @@ starting from the specified *roottype* (Kwong, 2020, p.54)
 "
 
 # ╔═╡ 4545f19a-b447-434b-9b71-ca986d7ae91b
-println(subtypes(Polygons))
+println(subtypes(Polygon))
 
 # ╔═╡ 8d840daf-7ccb-465f-8013-19538f5ad9e1
-println(join(fill(" ", 2*4)) * string(Squares))
+println(join(fill(" ", 2*4)) * string(Square))
 
 # ╔═╡ 558d1881-11f5-42bf-b93d-2b588c5f942a
-subtypes(Polygons)
+subtypes(Polygon)
 
 # ╔═╡ aecb3aa1-1fcb-4508-98bc-a8659ba8b5f4
-subtypes(Polygon)
+subtypes(Polygons)
 
 # ╔═╡ 02cf708d-8045-4295-b2a5-49d0700e32dc
 string(subtypes(Polygon))
@@ -988,19 +995,20 @@ function displayTree(rootType; level=0, indent=9)
 end # function subTypeTree
 
 # ╔═╡ 4d79c311-2974-4b93-a430-732f34451577
-displayTree(Polygons)
+displayTree(Polygon)
 
 # ╔═╡ 1f08b68b-ab5a-4903-a461-f9807cb58429
 md"
 ---
 ##### 8. Summary
 
-First we presented how software *namespaces* can be representated in a hierarchy of *modules*.
-Then we described how to model hierarchies of *concepts* by *abstract*, *concrete types*, and *instances* (= *objects*) by *nominal behavioral subtyping*. 
+First we demonstrated how software *namespaces* can be representated in a hierarchy of *modules*.
 
-As a proof of concept we defined several *methods* for computing the area of the polygon. So methods are attached to the abstract types *Polygons*, *Triangles*, *Rectangles*, and *Squares*. 
+Then we described how to model *informal* hierarchies of *concepts* by *abstract*, *concrete types*, and *instances* (= *objects*) by *nominal* behavioral *subtyping*. 
 
-This way the area of all instances belonging to those types is computed *directly* by these *local* methods. For all other instances their abstract type has no area method at hand. So the area computation is *delegated upwards* the inheritance tree till a matching method is found. 
+As a proof of concept we defined several *methods* for computing the area of the polygon. So methods are attached to the *abstract* types *Polygon*, *Triangle*, *Rectangle*, and *Square*. 
+
+This way the area of all instances belonging to the corresponding *concrete* types *Polygons*, *Triangles*, *Rectangles*, and *Squares* is computed *directly* by these *local* methods. For all other instances their corresonding *abstract* type has no area method at hand. So the area computation is *delegated upwards* the inheritance tree till a matching method of a *supertype* is found. 
 
 "
 
