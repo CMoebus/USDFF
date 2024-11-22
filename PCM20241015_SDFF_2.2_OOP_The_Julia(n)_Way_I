@@ -32,7 +32,7 @@ md"
 ##### - Replacement of SDFF, ch 2.2 -
 ##### file: PCM20241015\_SDFF\_2.2\_OOP\_The\_Julia(n)\_Way\_I
 ##### libraries: Julia 1.11.1/Pluto 0.20.0/Plots 1.40.8/LinearAlgebra 1.11.0
-##### code: Pluto/Julia-code by PCM *** 2024/11/21 ***
+##### code: Pluto/Julia-code by PCM *** 2024/11/22 ***
 =====================================================================================
 "
 
@@ -40,7 +40,7 @@ md"
 md"
 ##### 0. Introduction
 First we present how software *namespaces* can be representated in a hierarchy of nested *modules*.
-Then we describe how to model *hierarchies* of *concepts* by *abstract*, *concrete types (= classes)*, *multiple-dispatched methods*, and *instances (= objects)*. 
+Then we describe how to model *hierarchies* of *concepts* in a classical *object-orientated* style by *abstract* as well as *concrete types (= classes)*, *multiple-(dispatchable) methods*, and *instances (= objects)*. 
 "
 
 # ╔═╡ f376afea-fc1e-48c0-80f9-596bce368c6a
@@ -95,7 +95,7 @@ foo3(3)
 md"
 ---
 ##### 3. [Concepts](https://en.wikipedia.org/wiki/Concept), Types, Classes, and Instances (= OOP, the Julia(n) way)
-Julia is (like Scheme) more *functional* than *object-orientated* but with *imperative* aspects. OOP in Julia is similar but not identical to OOP in mainstream languages. *Structure* and *behaviour* are *decoupled*. *Structure* and *instances* are represented in *types* and *behaviour* in *methods*. There are two kind of types in Julia: *abstract* and *concrete*. When it is *concrete* then it is similar to mainstream OOP *classes*. 
+Julia is (like e.g. Scheme) more typical *functional* with *imperative* aspects than *object-orientated*. OOP in Julia is similar but not identical to OOP in mainstream languages. *Structure* and *behaviour* are *decoupled*. *Structure* and *instances* are represented in *types* and *behaviour* in *methods*. There are two kind of types in Julia: *abstract* and *concrete*. When a ype is *concrete* then it is similar to mainstream OOP *classes*. 
 
 - *Abstract* types control *inheritance* or *delegation* of behavior by *multiple dispatch* of *methods*. An abstract type can posess methods but *not* *attributes* in the form of *data fields*. 
 
@@ -103,7 +103,7 @@ Julia is (like Scheme) more *functional* than *object-orientated* but with *impe
 
 - *Methods* are called with *instances* as *one* of the *arguments*. The method call is *delegated* by *multiple dispatch* to the correct implementation. This is called [*structural subtyping*](https://en.wikipedia.org/wiki/Structural_type_system) or [*duck tying*](https://en.wikipedia.org/wiki/Duck_typing) if the instance argument is *without* type information (Kwong, 2020, ch. 12, p.467). Otherwise it's called [*nominal subtyping*](https://en.wikipedia.org/wiki/Nominal_type_system) (Kwong, 2020, ch. 12, p.467). 
 
-- In our implementation presented here we use *nominal subtyping*. With an *typified instance* argument the *method call* can be *delegated* along the *subtype-type-supertype hierarchy* to the matching method stored in the correct *abstract* type. 
+- In our implementation presented here we use *nominal subtyping*. With an *typified instance* argument the *method call* can be *delegated* along the *subtype-type-supertype hierarchy* to the matching method stored in the correct *abstract* type. So the *call* of an instance with arguments is similar to sending a *message* to an instance.
 
 "
 
@@ -221,96 +221,127 @@ The concepts *IsoscelesRightTriangles*, *Rhombi*, and *Squares* possess *multipl
 # ╔═╡ 07580187-c952-480d-a8e9-e9970c310d7f
 begin
 	#--------------------------------------------------------------------------------
-	abstract type Polygon end                                    # abstract type 1
+	abstract type Polygon end                                      # level 5
 	#--------------------------------------------------------------------------------
-	abstract type Triangle <: Polygon end                        # abstract type 2
-	abstract type Quadrilateral <: Polygon end                   # abstract type 3
+	abstract type Triangle <: Polygon end                          # level 4, left
+	abstract type Quadrilateral <: Polygon end                     # level 4, right
 	#--------------------------------------------------------------------------------
-	abstract type IsoscelesTriangle <: Triangle end              # abstract type 4
-	abstract type RightTriangle <: Triangle end                  # abstract type 5
+	abstract type IsoscelesTriangle <: Triangle end                # level 3, left
+	abstract type RightTriangle <: Triangle end                    # level 3, left 
 	#------------------------------------------------
-	abstract type Trapezoid <: Quadrilateral end                 # abstract type 6
-	abstract type Kite <: Quadrilateral end                      # abstract type 7
-	#------------------------------------------------
-	abstract type Parallelogram <: Trapezoid end                 # abstract type 8
+	abstract type Trapezoid <: Quadrilateral end                   # level 3, right
+	abstract type Kite <: Quadrilateral end                        # level 3, right
+	#------------------------------------------------------------------------------
+	abstract type Parallelogram <: Trapezoid end                   # level 2, right
 	#--------------------------------------------------------------------------------
-	abstract type Rectangle <: Parallelogram end                 # abstract type 9
+	abstract type Rectangle <: Parallelogram end                   # level 1, right
 	# closest common ancestor type is Quadrilateral
 	println(typejoin(Parallelogram, Kite))                       # ==> Quadrilateral
-	abstract type Rhombus <: typejoin(Parallelogram, Kite) end   # abstract type 10
+	abstract type Rhombus <: typejoin(Parallelogram, Kite) end     # level 1, right
 	#--------------------------------------------------------------------------------
-	abstract type EquilateralTriangle <: IsoscelesTriangle end   # abstract type 11
+	abstract type EquilateralTriangle <: IsoscelesTriangle end     # level 1, left
 	# closest common ancestor type is Triangle
-	println(typejoin(IsoscelesTriangle, RightTriangle))          # ==> Triangles 
-	abstract type IsoscelesRightTriangle <: typejoin(IsoscelesTriangle, RightTriangle) end                                           # abstract type 12
+	println(typejoin(IsoscelesTriangle, RightTriangle))            # ==> Triangle 
+	abstract type IsoscelesRightTriangle <: typejoin(IsoscelesTriangle, RightTriangle) end                                             # level 1, left
 	#--------------------------------------------------------------------------------
 	# closest common ancestor type is Quadrilateral
-	println(typejoin(Rectangle, Rhombus))                        # ==> Quadrilaterals
-	abstract type Square <: typejoin(Rectangle, Rhombus) end     # abstract type 13
+	println(typejoin(Rectangle, Rhombus))                        # ==> Quadrilateral
+	abstract type Square <: typejoin(Rectangle, Rhombus) end       # level 1, right
+	#--------------------------------------------------------------------------------
+end
+
+# ╔═╡ c8e6be77-ad60-40f4-95ed-996c6e5e5ef8
+md"
+---
+###### 4.2.2 $describeYourself$-*Method* for *Abstract* Types
+The $describeYourself$-*function* has 13 (!) *method*s (each for an *abstract* type). This has been achieved by Julia's *multiple dispatch*. 
+"
+
+# ╔═╡ 5e7cbf6a-5410-425a-a49f-5ca2f57b528b
+begin
+	#--------------------------------------------------------------------------------
+	describeYourself(polygon::Polygon) =
+		"This is the description of the abstract type *Polygon*: In geometry, a [polygon](https://en.wikipedia.org/wiki/Polygon) (/ˈpɒlɪɡɒn/) is a plane figure that is described by a finite number of straight line segments connected to form a closed polygonal chain (or polygonal circuit)."
+	#--------------------------------------------------------------------------------
+	describeYourself(triangle::Triangle) = "[Description](https://en.wikipedia.org/wiki/Polygon#Area) of the abstract type *Triangle*: The simplest polygon which can exist in the Euclidean plane. Can tile the plane."
+	describeYourself(quadrilateral::Quadrilateral) = "[Description](https://en.wikipedia.org/wiki/Polygon#Area) of the abstract type *Quadrilateral*: The simplest polygon which can cross itself; the simplest polygon which can be concave; the simplest polygon which can be non-cyclic. Can tile the plane."
+	#--------------------------------------------------------------------------------
+	describeYourself(isoscelesTriangle::IsoscelesTriangle) = "This is the description of the abstract type *IsosceleTriangle*"
+	describeYourself(rightTriangle::RightTriangle) = "This is the description of the abstract type *RightTriangle*"
+	describeYourself(equilateralTriangle::EquilateralTriangle) = "This is the description of the abstract type *EquilateralTriangle*"
+	describeYourself(isoscelesRightTriangle::IsoscelesRightTriangle) = "This is the description of the abstract type *IsosceleRightTriangle*"
+	#--------------------------------------------------------------------------------
+	describeYourself(trapezoid::Trapezoid) = "This is the description of the abstract type *Trapezoid*"
+	describeYourself(kite::Kite) = "This is the description of the abstract type *Kite*"
+	describeYourself(parallelogram::Parallelogram) = "This is the description of the abstract type *Parallelogram*"
+	describeYourself(rectangle::Rectangle) = "This is the description of the abstract type *Rectangle*"
+	describeYourself(rhombus::Rhombus) = "This is the description of the abstract type *Rhombus*"
+	describeYourself(square::Square) = "This is the description of the abstract type *Square*"
 	#--------------------------------------------------------------------------------
 end
 
 # ╔═╡ 59fba8d6-b29b-46bf-ba44-9f36e049554b
 md"
 ---
-###### Get Supertypes of *Abstract* Types
+###### 4.2.3 Tests of *Abstract* Types *Tree*
+###### 4.2.3.1 Tests of Supertypes
 "
 
 # ╔═╡ 1ea65c72-a7ac-4af2-8a1e-b2d9c8a8305d
-supertype(Polygon)
+supertype(Polygon) == Any
 
 # ╔═╡ 8dab1af0-5a6a-423e-b5d5-c80c2621b300
-supertype(Triangle)
+supertype(Triangle) == Polygon
 
 # ╔═╡ e942e438-ed50-4cfa-bcfd-b43e2dd0b536
-supertype(Quadrilateral)
+supertype(Quadrilateral) == Polygon
 
 # ╔═╡ e78234ec-ddaa-4053-836c-7ed55a7a8cbe
-supertype(IsoscelesTriangle)
+supertype(IsoscelesTriangle) == Triangle
 
 # ╔═╡ 02a82454-3f4d-47f9-b1a5-184601477730
-supertype(RightTriangle)
+supertype(RightTriangle) == Triangle
 
 # ╔═╡ a685fd8e-2414-4142-85f7-76d8a91f4dc8
-supertype(Trapezoid)
+supertype(Trapezoid) == Quadrilateral
 
 # ╔═╡ 7af84872-5d3c-4520-b9d8-8a55edcc1f85
-supertype(Kite)
+supertype(Kite) == Quadrilateral
 
 # ╔═╡ a9a32f2f-73cc-40eb-af39-7584c383a54b
-supertype(Parallelogram)
+supertype(Parallelogram) == Trapezoid
 
 # ╔═╡ d58ca52f-1383-4975-85a8-2ffc5e60bb29
-supertype(Rectangle)
+supertype(Rectangle) == Parallelogram
 
 # ╔═╡ 8126f3d3-f87f-488f-b22f-30f26d4def72
-supertype(Rhombus)                 
+supertype(Rhombus) == Quadrilateral             
 
 # ╔═╡ 532d6312-518d-4d2b-be31-54eaa9e6fbe1
-supertype(EquilateralTriangle)
+supertype(EquilateralTriangle) == IsoscelesTriangle
 
 # ╔═╡ 93ec3ff3-334e-45a5-a071-af476abb5042
-supertype(IsoscelesRightTriangle)
+supertype(IsoscelesRightTriangle) == Triangle
 
 # ╔═╡ 17ba8117-e170-4ac0-a426-c913dc20b65d
-supertype(Square)                
+supertype(Square) == Quadrilateral              
 
 # ╔═╡ 0fde6aae-d47a-439b-84e3-229fc221cfdb
 md"
 ---
-###### Get Types of *Abstract* Types
+###### 4.2.3.2 Test of Types of *Abstract* Types
 "
 
 # ╔═╡ ad5855d6-deb9-4489-b832-7636953230e8
-typeof(Polygon)
+typeof(Polygon) == DataType
 
 # ╔═╡ 709c6ceb-dce6-4076-83ad-6de86ee9baee
-typeof(Square)
+typeof(Square) == DataType
 
 # ╔═╡ 441376de-c244-47f8-95d0-29fd184e51af
 md"
 ---
-###### Get Subtypes of *Abstract* Types
+###### 4.2.3.3 Test of Subtypes of *Abstract* Types
 "
 
 # ╔═╡ 0cd48b25-2e2c-4f07-b21f-efc966cd44ed
@@ -356,12 +387,18 @@ subtypes(Square)
 md"
 ---
 ###### 4.3 *Concrete* Types (Fig. 2)
-###### 4.3.1 *Matching* of *Concrete* to *Abstract* Types
-*Concrete* types are necessary for the *generation* of *instances* (= *objects*). *Abstract* types are unable to do that. *Instances* inherit the *fields* of the corresponding *concrete* type. *Methods* are inherited from the *abstract* type inheritance *tree*.
+###### 4.3.1 *Pairing* *Abstract* Types with their *Concrete* Twins
+
+Each *abstract* type is paired with a *concrete* type. 
+
+- *Abstract* types possess *only* methods and *no* data *fields*. 
+- *Concrete* types only possess *data fields* and *no* *methods*. *Concrete* types are necessary for the *generation* of *instances* (= *objects*). This is their only purpose. *Abstract* types are unable to do that. 
+
+*Instances* inherit the *fields* of the corresponding *concrete* type. *Methods* are inherited from the *abstract* type inheritance *tree*.
 "
 
 # ╔═╡ b7d762bb-64ec-47c5-a1da-b6c7cda5abaf
-subtypes(Shape), typeof(Shape), supertype(Shape)
+Shape, subtypes(Shape), typeof(Shape), supertype(Shape)
 
 # ╔═╡ e735872f-de04-4b9b-a40c-3f2d8747b10c
 begin 
@@ -424,82 +461,28 @@ end
 # ╔═╡ 79a5aabc-220f-4193-bedf-c1e55a0fb5e3
 md"
 ---
-###### 4.3.2 Generation of *Instances* with Function $makeInstance$
+###### 4.3.2 Generation of *Instances* (= Objects) 
+with Function $makeInstance$
 "
 
 # ╔═╡ e6b2f2cc-3772-491f-8c8a-7888fb5a6d0a
 function makeInstance(concreteType::DataType, xs::Vector, ys::Vector, instanceId::String)
-	# parameter concreteType must be a concrete type not an abstract one !
-	# xs, ys, instanceId, and are fields of the concrete type
-	# concreteType(xs, ys, instanceId), Shape(xs, ys)
-	concreteType(xs, ys, instanceId, Shape(xs, ys)) # instance generator 
+	# parameter concreteType must be a *concrete* type not an *abstract* one !
+	# xs, ys, and instanceId are fields of the *concrete* type
+	description::String = instanceId                               # field 3
+	concreteType(xs, ys, instanceId, Shape(xs, ys))     # call of instance generator 
 end # function makeInstance
-
-# ╔═╡ c8e6be77-ad60-40f4-95ed-996c6e5e5ef8
-md"
----
-###### 4.4 $describeYourself$-*Method* for *Abstract* Types
-The $describeYourself$-*function* has 13 (!) *method*s (each for an *abstract* type). This has been achieved by Julia's *multiple dispatch*. 
-"
-
-# ╔═╡ 5e7cbf6a-5410-425a-a49f-5ca2f57b528b
-begin
-	#--------------------------------------------------------------------------------
-	describeYourself(polygon::Polygon) =
-		"This is the description of the abstract type *Polygon*: In geometry, a [polygon](https://en.wikipedia.org/wiki/Polygon) (/ˈpɒlɪɡɒn/) is a plane figure that is described by a finite number of straight line segments connected to form a closed polygonal chain (or polygonal circuit)."
-	#--------------------------------------------------------------------------------
-	describeYourself(triangle::Triangle) = "[Description](https://en.wikipedia.org/wiki/Polygon#Area) of the abstract type *Triangle*: The simplest polygon which can exist in the Euclidean plane. Can tile the plane."
-	describeYourself(quadrilateral::Quadrilateral) = "[Description](https://en.wikipedia.org/wiki/Polygon#Area) of the abstract type *Quadrilateral*: The simplest polygon which can cross itself; the simplest polygon which can be concave; the simplest polygon which can be non-cyclic. Can tile the plane."
-	#--------------------------------------------------------------------------------
-	describeYourself(isoscelesTriangle::IsoscelesTriangle) = "This is the description of the abstract type *IsosceleTriangle*"
-	describeYourself(rightTriangle::RightTriangle) = "This is the description of the abstract type *RightTriangle*"
-	describeYourself(equilateralTriangle::EquilateralTriangle) = "This is the description of the abstract type *EquilateralTriangle*"
-	describeYourself(isoscelesRightTriangle::IsoscelesRightTriangle) = "This is the description of the abstract type *IsosceleRightTriangle*"
-	#--------------------------------------------------------------------------------
-	describeYourself(trapezoid::Trapezoid) = "This is the description of the abstract type *Trapezoid*"
-	describeYourself(kite::Kite) = "This is the description of the abstract type *Kite*"
-	describeYourself(parallelogram::Parallelogram) = "This is the description of the abstract type *Parallelogram*"
-	describeYourself(rectangle::Rectangle) = "This is the description of the abstract type *Rectangle*"
-	describeYourself(rhombus::Rhombus) = "This is the description of the abstract type *Rhombus*"
-	describeYourself(square::Square) = "This is the description of the abstract type *Square*"
-	#--------------------------------------------------------------------------------
-end
 
 # ╔═╡ 6d3f35ba-f83d-4cf7-975a-b7b08e9d6771
 md"
 ---
 #####  5. Area-functions for *Abstract* Types: Polygon, Triangle, Rectangle, Square ([Shoelace-formula](https://en.wikipedia.org/wiki/Shoelace_formula))
 
-- The area calculation of each *Quadrilateral* besides *Square* is *delegated* to the *abstract* supertype *Polygon*. 
+It is easier to understand the delegations of computations when we don't differentiate between the (*concrete*) type of an instance and its *paired* (*abstract*) type. Under this view we can abbreviate the long and correct 'instance xyz is of *concrete* type *Polygons* and its *paired* type is *Polygon*' by 'instance xyz is of type *Polygon*'.
 
-- The area of *Square* is calculated by the *local* area method for *Square*:
+- The area of all instances of *Polygons* or for some instances with *subtypes* of *Polygon* the $area$-calculation is *delegated* to the method of *Polygon*. So e.g. the area calculation of each *Quadrilateral* besides *Square* is *delegated* to *Polygon*. The area is calculated according the [Shoelace-algorithm](https://en.wikipedia.org/wiki/Shoelace_formula):
 
-$A = a^2\;\;; A \text{ = area of square with side } a$
-
-$\;$
-
-- The area of *Rectangle* is calculated by the *local* area method for *Rectangle*:
-
-$A = a\cdot b\;\;; A \text{ = area of square with sides } a, b$
-
-$\;$
-
-- The area calculation of *Triangle* and all subtypes of *Triangle* is delegated to the method of *abstract* type *Triangle*. The method of this calculates the area by [*Heron's*](https://en.wikipedia.org/wiki/Heron%27s_formula) formula:
-
-$\;$
-
-$s = 1/2 ( a + b + c )\;\;; \text{ s = semiperimeter of triangle with sides } a, b, c$
-
-$\;$
-
-$A = \sqrt(s(s − a)(s − b)(s − c))\;\;; A \text{ = area of triangle with sides } a, b, c$
-
-$\;$
-$\;$
-
-Calculating polygon aerea with [Shoelace-algorithm](https://en.wikipedia.org/wiki/Shoelace_formula) is like following:
 - The $x,y$-coordinates are read off *counter-clockwise* (*positive* orientation) from the polygon figures.
-- For some *subtypes* of the *abstract* type *Polygon* the $area$-method is *inherited* from *abstract* type *Polygon* or the the $area$-calculation is *delegated* to the *abstract* type *Polygon*.
 
 $A = \frac{1}{2}\sum_{i=0}^{n-1}\left( x_iy_{i+1}-x_{i+1}y_i\right) = \frac{1}{2}\sum_{i=0}^{n-1}\begin{vmatrix}
      x_i     & y_i     \\ 
@@ -509,6 +492,37 @@ $A = \frac{1}{2}\sum_{i=0}^{n-1}\left( x_iy_{i+1}-x_{i+1}y_i\right) = \frac{1}{2
 $\;$
 $\;$
 $\;$
+
+- The area of all instances of *Squares* is calculated by the *local* area method for *Square*:
+
+$A = a^2\;\;; A \text{ = area of square with side } a$
+
+$\;$
+$\;$
+
+- The area of all instances of *Rectangles* is calculated by the *local* area method for *Rectangle*:
+
+$A = a\cdot b\;\;; A \text{ = area of square with sides } a, b$
+
+$\;$
+$\;$
+
+- The area of all instances of *Triangles* and all subtypes of *Triangle* is delegated to the method of *Triangle*. The method of this calculates the area by [*Heron's*](https://en.wikipedia.org/wiki/Heron%27s_formula) formula:
+
+$\;$
+$\;$
+
+$s = 1/2 ( a + b + c )\;\;; \text{ s = semiperimeter of triangle with sides } a, b, c$
+
+$\;$
+$\;$
+
+$A = \sqrt(s(s − a)(s − b)(s − c))\;\;; A \text{ = area of triangle with sides } a, b, c$
+
+$\;$
+$\;$
+$\;$
+
 
 "
 
@@ -1004,7 +1018,7 @@ md"
 
 First we demonstrated how software *namespaces* can be representated in a hierarchy of *modules*.
 
-Then we described how to model *informal* hierarchies of *concepts* by *abstract*, *concrete types*, and *instances* (= *objects*) by *nominal* behavioral *subtyping*. 
+Then we described how to model *informal* hierarchies of *concepts* by *abstract*, *concrete types*, and *instances* (= *objects*) by *nominal* (behavioral) *subtyping*. 
 
 As a proof of concept we defined several *methods* for computing the area of the polygon. So methods are attached to the *abstract* types *Polygon*, *Triangle*, *Rectangle*, and *Square*. 
 
@@ -2308,6 +2322,8 @@ version = "1.4.1+1"
 # ╟─5cbb7ab0-afdb-44f7-bc57-2267b6b75ada
 # ╟─b159dca0-674f-41d8-97e3-272837babd48
 # ╠═07580187-c952-480d-a8e9-e9970c310d7f
+# ╟─c8e6be77-ad60-40f4-95ed-996c6e5e5ef8
+# ╠═5e7cbf6a-5410-425a-a49f-5ca2f57b528b
 # ╟─59fba8d6-b29b-46bf-ba44-9f36e049554b
 # ╠═1ea65c72-a7ac-4af2-8a1e-b2d9c8a8305d
 # ╠═8dab1af0-5a6a-423e-b5d5-c80c2621b300
@@ -2344,8 +2360,6 @@ version = "1.4.1+1"
 # ╠═e735872f-de04-4b9b-a40c-3f2d8747b10c
 # ╟─79a5aabc-220f-4193-bedf-c1e55a0fb5e3
 # ╠═e6b2f2cc-3772-491f-8c8a-7888fb5a6d0a
-# ╟─c8e6be77-ad60-40f4-95ed-996c6e5e5ef8
-# ╠═5e7cbf6a-5410-425a-a49f-5ca2f57b528b
 # ╟─6d3f35ba-f83d-4cf7-975a-b7b08e9d6771
 # ╠═d47dbeb5-c001-4db5-b185-969bbcd76a49
 # ╟─cd1c11df-cb88-49b8-8034-aa94fb7df2ee
