@@ -17,13 +17,7 @@ begin
 end # begin
 
 # ╔═╡ 7b2996c7-fca1-426b-b31b-051c2cc12128
-using .Foos.Foos1: foo1      # from ".Foos.Foos1:" use only "foo1"
-
-# ╔═╡ d619dd1e-f99e-4384-a7bd-9137cb0c7a71
-using .Foos.Foos2: foo2      # from ".Foos.Foos2:" use only "foo2"
-
-# ╔═╡ 243c05e9-b85b-41ff-8fa3-512d27498d27
-using .Foos: foo3                       # from ".Foos:" use only "foo3"
+using .Foo1.Foo2: foo       # from ".Foo1.Foo2:" use only "foo"
 
 # ╔═╡ 4ce0a5ac-0163-410c-9ed7-086f95190ed2
 md"
@@ -32,13 +26,15 @@ md"
 ##### - Replacement of SDFF, ch 2.2 -
 ##### file: PCM20241015\_SDFF\_2.2\_OOP\_The\_Julia(n)\_Way\_I
 ##### libraries: Julia 1.11.1/Pluto 0.20.0/Plots 1.40.8/LinearAlgebra 1.11.0
-##### code: Pluto/Julia-code by PCM *** 2024/11/22 ***
+##### code: Pluto/Julia-code by PCM *** 2024/11/23 ***
 =====================================================================================
 "
 
 # ╔═╡ 53f21356-37d8-466f-be30-3268ffc3f9b5
 md"
 ##### 0. Introduction
+This work was inspired by Abelson, Sussman, and Sussman (1996, 2024) and Kwong (2020).
+
 First we present how software *namespaces* can be representated in a hierarchy of nested *modules*.
 Then we describe how to model *hierarchies* of *concepts* in a classical *object-orientated* style by *abstract* as well as *concrete types (= classes)*, *multiple-(dispatchable) methods*, and *instances (= objects)*. 
 "
@@ -57,39 +53,36 @@ md"
 "
 
 # ╔═╡ 31686d00-feac-11ec-127b-3b9dd67a3da6
-module Foos
-	export foo3
-	#------------------------------------
-	module Foos1             # submodule
-		export foo1
-		foo1(x) = x + 10
+module Foo1                  # module Foo1
+	export foo
+	#------------------------------------------
+	module Foo2              # submodule Foo2
+		export foo
+		foo(x) = x + 10
 	end # module Foos1
-	#------------------------------------
-	module Foos2             # submodule
-		export foo2
-		foo2(x) = x * 10
+	#------------------------------------------
+	module Foo3              # submodule Foo3
+		export foo
+		foo(x) = x * 10
 	end # module Foos2
-	#------------------------------------
-	foo3(x) = x ^ 10
+	#------------------------------------------
+	foo(x) = x^10            # module Foo1
 end # module Foos
 
-# ╔═╡ c6bca338-bec5-474a-baa2-db156348378c
-Foos.Foos1.foo1(3)           # ==> 13 --> :)
-
-# ╔═╡ 71de7d3e-3202-4db8-8207-028898d66379
-Foos.Foos2.foo2(3)           # ==> 30 --> :)
+# ╔═╡ 9e541abc-5131-4c7b-b2fc-fe3ceae35c73
+3^5 * 3^5
 
 # ╔═╡ 3953920c-99fa-43d9-a089-5d38a973ed40
-Foos.foo3(3)                 # 3 * 3 * 3 * 3 * 3 * 3 * 3 * 3 * 3 * 3 = 59049
+Foo1.foo(3)                 # 3 * 3 * 3 * 3 * 3 * 3 * 3 * 3 * 3 * 3 = 59049
+
+# ╔═╡ c6bca338-bec5-474a-baa2-db156348378c
+Foo1.Foo2.foo(3)            # ==> 13 --> :)
+
+# ╔═╡ 71de7d3e-3202-4db8-8207-028898d66379
+Foo1.Foo3.foo(3)            # ==> 30 --> :)
 
 # ╔═╡ 3f36ea76-5d87-46f7-8b18-bc01e9a90bc4
-foo1(3)                      # ==> 13 --> :)
-
-# ╔═╡ bd8667b0-0456-4f3a-9154-fbc0c53bde3f
-foo2(3)                      # ==> 30 --> :)
-
-# ╔═╡ 76ba775d-4005-4c98-ab5b-4f557daddd06
-foo3(3)
+foo(3)                      # ==> 13 --> :)
 
 # ╔═╡ 345f127d-7fb5-4062-84f4-1a03b8a741ab
 md"
@@ -260,23 +253,23 @@ The $describeYourself$-*function* has 13 (!) *method*s (each for an *abstract* t
 # ╔═╡ 5e7cbf6a-5410-425a-a49f-5ca2f57b528b
 begin
 	#--------------------------------------------------------------------------------
-	describeYourself(polygon::Polygon) =
+	describeYourself(instance::Polygon) =
 		"This is the description of the abstract type *Polygon*: In geometry, a [polygon](https://en.wikipedia.org/wiki/Polygon) (/ˈpɒlɪɡɒn/) is a plane figure that is described by a finite number of straight line segments connected to form a closed polygonal chain (or polygonal circuit)."
 	#--------------------------------------------------------------------------------
-	describeYourself(triangle::Triangle) = "[Description](https://en.wikipedia.org/wiki/Polygon#Area) of the abstract type *Triangle*: The simplest polygon which can exist in the Euclidean plane. Can tile the plane."
-	describeYourself(quadrilateral::Quadrilateral) = "[Description](https://en.wikipedia.org/wiki/Polygon#Area) of the abstract type *Quadrilateral*: The simplest polygon which can cross itself; the simplest polygon which can be concave; the simplest polygon which can be non-cyclic. Can tile the plane."
+	describeYourself(instance::Triangle) = "[Description](https://en.wikipedia.org/wiki/Polygon#Area) of the abstract type *Triangle*: The simplest polygon which can exist in the Euclidean plane. Can tile the plane."
+	describeYourself(instance::Quadrilateral) = "[Description](https://en.wikipedia.org/wiki/Polygon#Area) of the abstract type *Quadrilateral*: The simplest polygon which can cross itself; the simplest polygon which can be concave; the simplest polygon which can be non-cyclic. Can tile the plane."
 	#--------------------------------------------------------------------------------
-	describeYourself(isoscelesTriangle::IsoscelesTriangle) = "This is the description of the abstract type *IsosceleTriangle*"
-	describeYourself(rightTriangle::RightTriangle) = "This is the description of the abstract type *RightTriangle*"
-	describeYourself(equilateralTriangle::EquilateralTriangle) = "This is the description of the abstract type *EquilateralTriangle*"
-	describeYourself(isoscelesRightTriangle::IsoscelesRightTriangle) = "This is the description of the abstract type *IsosceleRightTriangle*"
+	describeYourself(instance::IsoscelesTriangle) = "This is the description of the abstract type *IsosceleTriangle*"
+	describeYourself(instance::RightTriangle) = "This is the description of the abstract type *RightTriangle*"
+	describeYourself(instance::EquilateralTriangle) = "This is the description of the abstract type *EquilateralTriangle*"
+	describeYourself(instance::IsoscelesRightTriangle) = "This is the description of the abstract type *IsosceleRightTriangle*"
 	#--------------------------------------------------------------------------------
-	describeYourself(trapezoid::Trapezoid) = "This is the description of the abstract type *Trapezoid*"
-	describeYourself(kite::Kite) = "This is the description of the abstract type *Kite*"
-	describeYourself(parallelogram::Parallelogram) = "This is the description of the abstract type *Parallelogram*"
-	describeYourself(rectangle::Rectangle) = "This is the description of the abstract type *Rectangle*"
-	describeYourself(rhombus::Rhombus) = "This is the description of the abstract type *Rhombus*"
-	describeYourself(square::Square) = "This is the description of the abstract type *Square*"
+	describeYourself(instance::Trapezoid) = "This is the description of the abstract type *Trapezoid*"
+	describeYourself(instance::Kite) = "This is the description of the abstract type *Kite*"
+	describeYourself(instance::Parallelogram) = "This is the description of the abstract type *Parallelogram*"
+	describeYourself(instance::Rectangle) = "This is the description of the abstract type *Rectangle*"
+	describeYourself(instance::Rhombus) = "This is the description of the abstract type *Rhombus*"
+	describeYourself(instance::Square) = "This is the description of the abstract type *Square*"
 	#--------------------------------------------------------------------------------
 end
 
@@ -394,7 +387,7 @@ Each *abstract* type is paired with a *concrete* type.
 - *Abstract* types possess *only* methods and *no* data *fields*. 
 - *Concrete* types only possess *data fields* and *no* *methods*. *Concrete* types are necessary for the *generation* of *instances* (= *objects*). This is their only purpose. *Abstract* types are unable to do that. 
 
-*Instances* inherit the *fields* of the corresponding *concrete* type. *Methods* are inherited from the *abstract* type inheritance *tree*.
+*Instances* inherit the *fields* of the corresponding *concrete* type. *Methods* are inherited from the *abstract* type inheritance *tree*. The equivalent view is that computations are *delegated* from the *concrete* to the *abstract* type.
 "
 
 # ╔═╡ b7d762bb-64ec-47c5-a1da-b6c7cda5abaf
@@ -461,15 +454,14 @@ end
 # ╔═╡ 79a5aabc-220f-4193-bedf-c1e55a0fb5e3
 md"
 ---
-###### 4.3.2 Generation of *Instances* (= Objects) 
-with Function $makeInstance$
+###### 4.3.2 Generation of *Instances* (= Objects) of *Concrete* Type
 "
 
 # ╔═╡ e6b2f2cc-3772-491f-8c8a-7888fb5a6d0a
 function makeInstance(concreteType::DataType, xs::Vector, ys::Vector, instanceId::String)
 	# parameter concreteType must be a *concrete* type not an *abstract* one !
 	# xs, ys, and instanceId are fields of the *concrete* type
-	description::String = instanceId                               # field 3
+	instanceId::String                                  # field 3
 	concreteType(xs, ys, instanceId, Shape(xs, ys))     # call of instance generator 
 end # function makeInstance
 
@@ -526,20 +518,12 @@ $\;$
 
 "
 
-# ╔═╡ cd1c11df-cb88-49b8-8034-aa94fb7df2ee
-md"
----
-##### 6. Area-functions for *concrete* types: area of instances
-"
-
-# ╔═╡ 56486813-810c-4c97-b1d7-4faf552fbfe1
-IntOrFloat = Union{Integer, AbstractFloat}
-
 # ╔═╡ d47dbeb5-c001-4db5-b185-969bbcd76a49
 begin
 	#-----------------------------------------------------------------------------
 	# shoelace algorithm for computating polygon areas
-	function area(geometricObject::Polygon)
+	#   geometricObject may be of *abstract* type
+	function area(geometricObject::Polygon) 
 		let xs = geometricObject.xs; ys = geometricObject.ys
 			description = geometricObject.description
 			n = length(xs)              # because xs[n] == xs[1]
@@ -549,7 +533,8 @@ begin
 	end # area
 	#-----------------------------------------------------------------------------
 	# Heron's formula for computating triangle areas
-	function area(geometricObject::Triangle)
+	#   geometricObject may be of *abstract* type
+	function area(geometricObject::Triangle) # delegation to the *abstract* type
 		#--------------------------------------------------------------
 		function sideLength(x1, x2, y1, y2)
 			sqrt((x1 - x2)^2 + (y1 - y2)^2)
@@ -569,6 +554,7 @@ begin
 	end # area
 	#-----------------------------------------------------------------------------
 	# The area calculation of Rectangle is *not* delegated to Polygon;
+	#   geometricObject may be of *abstract* type
 	#   instead a local method is used
 	function area(geometricObject::Rectangle)
 		#--------------------------------------------------------------
@@ -576,8 +562,8 @@ begin
 			sqrt((x1 - x2)^2 + (y1 - y2)^2)
 		end # function sideLength
 		#--------------------------------------------------------------
-		let xs::Vector{IntOrFloat} = geometricObject.xs 
-			ys::Vector{IntOrFloat} = geometricObject.ys
+		let xs = geometricObject.xs 
+			ys = geometricObject.ys
 			description = geometricObject.description
 			n = length(xs) == (4+1) ? 5 : error("n =/= (4+1) because xs[n] == xs[1]")
 			a = sideLength(xs[1], xs[2], ys[1], ys[2])
@@ -588,6 +574,7 @@ begin
 	end # area
 	#-------------------------------------------------------------------------------
 	# The area calculation of Square is *not* delegated to the supertype Polygon;
+	#   geometricObject may be of *abstract* type
 	#   instead a local method is used
 	function area(geometricObject::Square)
 		#--------------------------------------------------------------
@@ -595,8 +582,8 @@ begin
 			sqrt((x1 - x2)^2 + (y1 - y2)^2)
 		end # function sideLength
 		#--------------------------------------------------------------
-		let xs::Vector{IntOrFloat} = geometricObject.xs 
-			ys::Vector{IntOrFloat} = geometricObject.ys
+		let xs = geometricObject.xs 
+			ys = geometricObject.ys
 			description = geometricObject.description
 			n = length(xs) == (4+1) ? 5 : error("n =/= (4+1) because xs[n] == xs[1]")
 			a = sideLength(xs[1], xs[2], ys[1], ys[2])
@@ -606,6 +593,12 @@ begin
 	end # area
 	#-------------------------------------------------------------------------------
 end # begin
+
+# ╔═╡ cd1c11df-cb88-49b8-8034-aa94fb7df2ee
+md"
+---
+##### 6. Area-functions for *concrete* types: area of instances
+"
 
 # ╔═╡ d788ce23-3798-4330-869a-6e7b77ddb203
 md"
@@ -657,8 +650,8 @@ let # area of myIrregularPentagon6 as of type Polygons
 			Polygons, 
 			[1, 3, 7, 4, 8, 1], [6, 1, 2, 4, 5, 6], "myIrregularPentagon6")
 		display(describeYourself(myIrregularPentagon6)); println()
-		display(area(myIrregularPentagon6::Polygons))   # the area should be 16.5 
-		plot(myIrregularPentagon6.shape, aspect_ratio=:equal, xlim=[0, 9], ylim=[0, 8], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(myIrregularPentagon6::Polygons)=16.5", titlefontsize=12)
+		display(area(myIrregularPentagon6))   # the area should be 16.5 
+		plot(myIrregularPentagon6.shape, aspect_ratio=:equal, xlim=[0, 9], ylim=[0, 8], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(myIrregularPentagon6)=16.5", titlefontsize=12)
 end # let
 
 # ╔═╡ c99a9b91-21e7-480f-b7cc-d902265bf84c
@@ -683,8 +676,8 @@ let # area of myTriangle3 as type of Triangles
 	myTriangle3 = 
 		makeInstance(Triangles, [0, 3, 1, 0], [0, 0, 2, 0], "myTriangle3")
 		display(describeYourself(myTriangle3)); println()
-		display(area(myTriangle3::Triangles))         # the area should be 3 
-		plot(myTriangle3.shape, aspect_ratio=:equal, xlim=[-0.5, 3.5], ylim=[-0.5, 2.5], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(myTriangle3::Triangles)=3.0", titlefontsize=12)
+		display(area(myTriangle3))         # the area should be 3 
+		plot(myTriangle3.shape, aspect_ratio=:equal, xlim=[-0.5, 3.5], ylim=[-0.5, 2.5], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(myTriangle3)=3.0", titlefontsize=12)
 		annotate!(1.5, -0.15, L"a", 12)
 		annotate!(2.2,  1.0, L"b", 12)
 		annotate!(0.35,  1.0, L"c", 12)
@@ -711,8 +704,8 @@ let # area of myIsoscelesTriangle4
 		makeInstance(IsoscelesTriangles, [0, 2, 1, 0], [0, 0, 4, 0], "myIsoscelesTriangle4")
 		display(describeYourself(myIsoscelesTriangle4)); println()
 		# the area should be 4
-		display(area(myIsoscelesTriangle4::IsoscelesTriangles))  
-		plot(myIsoscelesTriangle4.shape, aspect_ratio=:equal, xlim=[-0.5, 2.5], ylim=[-0.5, 4.5], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(myIsoscelesTriangle4::IsoscelesTriangles)=4.0", titlefontsize=12)
+		display(area(myIsoscelesTriangle4))  
+		plot(myIsoscelesTriangle4.shape, aspect_ratio=:equal, xlim=[-0.5, 2.5], ylim=[-0.5, 4.5], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(myIsoscelesTriangle4)=4.0", titlefontsize=12)
 end # let
 
 # ╔═╡ 8a33ed3a-9037-44c1-aa60-6e47549c4102
@@ -737,8 +730,8 @@ let # area of myEquilatTriangle43
 		makeInstance(EquilateralTriangles, [0, 1, 1/2, 0], [0, 0, sqrt(3/4), 0], "myEquilateralTriangle43")
 	    display(describeYourself(myEquilatTriangle43)); println()
 		# the area should be 0.433...
-		display(area(myEquilatTriangle43::EquilateralTriangles))  
-		plot(myEquilatTriangle43.shape, aspect_ratio=:equal, xlim=[-0.5, 1.5], ylim=[-0.5, 1.5], fill=:cornflowerblue, opacity=0.4, legend =false, title="$area(myEquilatTriangle43::EquilatTriangles)=0.433...", titlefontsize=12)
+		display(area(myEquilatTriangle43))  
+		plot(myEquilatTriangle43.shape, aspect_ratio=:equal, xlim=[-0.5, 1.5], ylim=[-0.5, 1.5], fill=:cornflowerblue, opacity=0.4, legend =false, title="$area(myEquilatTriangle43)=0.433...", titlefontsize=12)
 end # let
 
 # ╔═╡ a62e7c3f-02af-40e8-a54b-92a317d41539
@@ -762,8 +755,8 @@ let # area of myRightTriangle193
 		makeInstance(RightTriangles, [0, 4, 1/4, 0], [0, 0, sqrt(15)/4, 0], "myRightTriangle193")
 	    display(describeYourself(myRightTriangle193)); println()
 		# the area should be 1.936..
-		display(area(myRightTriangle193::RightTriangles))  
-		plot(myRightTriangle193.shape, aspect_ratio=:equal, xlim=[-0.5, 4.5], ylim=[-0.5, 1.5], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(myRightTriangle193::RightTriangles)=1.936", titlefontsize=12)
+		display(area(myRightTriangle193))  
+		plot(myRightTriangle193.shape, aspect_ratio=:equal, xlim=[-0.5, 4.5], ylim=[-0.5, 1.5], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(myRightTriangle193)=1.936", titlefontsize=12)
 end # let
 
 # ╔═╡ a4b5f920-5b21-4aec-be57-669cf0e604c4
@@ -787,8 +780,8 @@ let # area of myIsoscelesRightTriangle12
 		makeInstance(IsoscelesRightTriangles, [0, sqrt(2), (1/2)*sqrt(2), 0], [0,    0, sqrt(1/2), 0], "myIsoscelesRightTriangle12")
 	    display(describeYourself(myIsoscelesRightTriangle12)); println()
 		# the area should be 1/2
-		display(area(myIsoscelesRightTriangle12::IsoscelesRightTriangles))  
-		plot(myIsoscelesRightTriangle12.shape, aspect_ratio=:equal, xlim=[-0.5, 2.0], ylim=[-0.5, 1.5], fill=:cornflowerblue, opacity=0.4, title="$area(myIsoscelesRightTriangle12::IsoscelesRightTriangles)=1/2", titlefontsize=12)
+		display(area(myIsoscelesRightTriangle12))  
+		plot(myIsoscelesRightTriangle12.shape, aspect_ratio=:equal, xlim=[-0.5, 2.0], ylim=[-0.5, 1.5], fill=:cornflowerblue, opacity=0.4, title="$area(myIsoscelesRightTriangle12)=1/2", titlefontsize=12)
 end # let
 
 # ╔═╡ af23c5f9-87f3-47f0-b3c2-0fe59d74c33d
@@ -806,8 +799,8 @@ let # area of myQuadrilateral9
 		makeInstance(Quadrilaterals, [0, 5, 4, 2, 0], [0, 0, 2, 3, 0], "myQuadrilateral9")
 	    display(describeYourself(myQuadrilateral9)); println()
 		# the area should be 9
-		display(area(myQuadrilateral9::Quadrilaterals))  
-		plot(myQuadrilateral9.shape, aspect_ratio=:equal, xlim=[-0.5, 5.5], ylim=[-0.5, 3.5], fill=:cornflowerblue, opacity=0.4, title="$area(myQuadrilateral9::Quadrilaterals)=9.0", titlefontsize=12)
+		display(area(myQuadrilateral9))  
+		plot(myQuadrilateral9.shape, aspect_ratio=:equal, xlim=[-0.5, 5.5], ylim=[-0.5, 3.5], fill=:cornflowerblue, opacity=0.4, title="$area(myQuadrilateral9)=9.0", titlefontsize=12)
 end # let
 
 # ╔═╡ 56832f9a-db46-4c9e-b687-e1d8b90c5aae
@@ -835,8 +828,8 @@ let # area of myTrapezoid7
 		makeInstance(Trapezoids, [0, 5, 3, 1, 0], [0, 0, 2, 2, 0], "myTrapezoid")
 	    display(describeYourself(myTrapezoid7)); println()
 		# the area should be 7
-		display(area(myTrapezoid7::Trapezoids))  
-		plot(myTrapezoid7.shape, aspect_ratio=:equal, xlim=[-0.5, 5.5], ylim=[-0.5, 3.5], fill=:cornflowerblue, opacity=0.4, title="$area(myTrapezoid7::Trapezoids)=7.0", titlefontsize=12)
+		display(area(myTrapezoid7))  
+		plot(myTrapezoid7.shape, aspect_ratio=:equal, xlim=[-0.5, 5.5], ylim=[-0.5, 3.5], fill=:cornflowerblue, opacity=0.4, title="$area(myTrapezoid7)=7.0", titlefontsize=12)
 end # let
 
 # ╔═╡ 0987be73-36b5-44ea-bfa7-cdb5e83cb476
@@ -860,8 +853,8 @@ let # area of myParallelogram3
 		makeInstance(Parallelograms, [0, 3, 4, 1, 0], [0, 0, 1, 1, 0], "myParallelogram3")
 	    display(describeYourself(myParallelogram3)); println()
 		# the area should be 3
-		display(area(myParallelogram3::Parallelograms))  
-		plot(myParallelogram3.shape, aspect_ratio=:equal, xlim=[-0.5, 4.5], ylim=[-0.5, 1.5], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(myParallelogram3::Parallelograms)=3.0", titlefontsize=12)
+		display(area(myParallelogram3))  
+		plot(myParallelogram3.shape, aspect_ratio=:equal, xlim=[-0.5, 4.5], ylim=[-0.5, 1.5], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(myParallelogram3)=3.0", titlefontsize=12)
 end # let
 
 # ╔═╡ 6cea68b7-17e3-4e6b-947c-30e1fcda32f5
@@ -885,8 +878,8 @@ let # area of myRectangle3
 		makeInstance(Rectangles, [0, 3, 3, 0, 0], [0, 0, 1, 1, 0], "myRectangle3")
 	    display(describeYourself(myRectangle3)); println()
 		# the area should be 3
-		display(area(myRectangle3::Rectangles))  
-		plot(myRectangle3.shape, aspect_ratio=:equal, xlim=[-0.5, 3.5], ylim=[-0.5, 1.5], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(myRectangle3::Rectangles)=3.0", titlefontsize=12)
+		display(area(myRectangle3))  
+		plot(myRectangle3.shape, aspect_ratio=:equal, xlim=[-0.5, 3.5], ylim=[-0.5, 1.5], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(myRectangle3)=3.0", titlefontsize=12)
 	    annotate!(1.5, -0.1, L"a", 12)
 		annotate!(3.1, 0.5, L"b", 12)
 end # let
@@ -916,8 +909,8 @@ let # area of mySquare
 		makeInstance(Squares, [0, 1.5, 1.5, 0, 0], [0, 0, 1.5, 1.5, 0], "mySquare")
 	    display(describeYourself(mySquare225)); println()
 		# the area should be 2.25
-		display(area(mySquare225::Squares))  
-		plot(mySquare225.shape, aspect_ratio=:equal, xlim=[-0.5, 2.0], ylim=[-0.5, 2.0], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(mySquare225::Squares)=2.25", titlefontsize=12)
+		display(area(mySquare225))  
+		plot(mySquare225.shape, aspect_ratio=:equal, xlim=[-0.5, 2.0], ylim=[-0.5, 2.0], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(mySquare225)=2.25", titlefontsize=12)
 		annotate!(0.75, -0.1, L"a", 12)
 end # let
 
@@ -942,8 +935,8 @@ let # area of unit Kite (=rhombus)
 		makeInstance(Rhombi, [0, 1, 2, 1, 0], [2, 0, 2, 4, 2], "myRhombus")
 	    display(describeYourself(myRhombus4)); println()
 		# the area should be 4
-		display(area(myRhombus4::Rhombi))  
-		plot(myRhombus4.shape, aspect_ratio=:equal, xlim=[-0.5, 2.5], ylim=[-0.5, 4.5], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(myRhombus4::Rhombi)=4.0", titlefontsize=12)
+		display(area(myRhombus4))  
+		plot(myRhombus4.shape, aspect_ratio=:equal, xlim=[-0.5, 2.5], ylim=[-0.5, 4.5], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(myRhombus4)=4.0", titlefontsize=12)
 end # let
 
 # ╔═╡ f1c19eb3-6fc9-4516-b913-19244b230af3
@@ -967,8 +960,8 @@ let # area of myKite4
 		makeInstance(Kites, [1, 2, 1, 0, 1], [0, 3, 4, 3, 0], "myKite4")
 	    display(describeYourself(myKite4)); println()
 		# the area should be 4
-		display(area(myKite4::Kites))  
-		plot(myKite4.shape, aspect_ratio=:equal, xlim=[-0.5, 2.5], ylim=[-0.5, 4.5], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(myKite4::Kites)=4.0", titlefontsize=12)
+		display(area(myKite4))  
+		plot(myKite4.shape, aspect_ratio=:equal, xlim=[-0.5, 2.5], ylim=[-0.5, 4.5], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(myKite4)=4.0", titlefontsize=12)
 end # let
 
 # ╔═╡ 021f10cd-2b86-4157-8146-49582e0f3d3d
@@ -999,7 +992,7 @@ function displayTree(rootType; level=0, indent=9)
 	if rootType == []
 		return 
 	else
-		println(join(fill("-", level*indent)) * string(rootType))
+		println(join(fill(".", level*indent)) * string(rootType))
 		for subType in subtypes(rootType)
 			if subType !== []
 				displayTree(subType; level=level+1, indent)
@@ -2305,15 +2298,12 @@ version = "1.4.1+1"
 # ╠═14f715db-ae10-450d-8b7b-7989d90a4e7d
 # ╟─cc5f37be-18cc-427f-be25-83ce2449f605
 # ╠═31686d00-feac-11ec-127b-3b9dd67a3da6
+# ╠═9e541abc-5131-4c7b-b2fc-fe3ceae35c73
+# ╠═3953920c-99fa-43d9-a089-5d38a973ed40
 # ╠═c6bca338-bec5-474a-baa2-db156348378c
 # ╠═71de7d3e-3202-4db8-8207-028898d66379
-# ╠═3953920c-99fa-43d9-a089-5d38a973ed40
 # ╠═7b2996c7-fca1-426b-b31b-051c2cc12128
 # ╠═3f36ea76-5d87-46f7-8b18-bc01e9a90bc4
-# ╠═d619dd1e-f99e-4384-a7bd-9137cb0c7a71
-# ╠═bd8667b0-0456-4f3a-9154-fbc0c53bde3f
-# ╠═243c05e9-b85b-41ff-8fa3-512d27498d27
-# ╠═76ba775d-4005-4c98-ab5b-4f557daddd06
 # ╟─345f127d-7fb5-4062-84f4-1a03b8a741ab
 # ╟─d6d3106d-e7a7-4a6f-b9ab-fd4d4f448245
 # ╟─24653141-6aac-4a20-9370-6288f7f0d4dc
@@ -2363,7 +2353,6 @@ version = "1.4.1+1"
 # ╟─6d3f35ba-f83d-4cf7-975a-b7b08e9d6771
 # ╠═d47dbeb5-c001-4db5-b185-969bbcd76a49
 # ╟─cd1c11df-cb88-49b8-8034-aa94fb7df2ee
-# ╠═56486813-810c-4c97-b1d7-4faf552fbfe1
 # ╟─d788ce23-3798-4330-869a-6e7b77ddb203
 # ╠═1af36f62-43df-4df2-8e9f-4bc5705eb228
 # ╠═fdf3bc30-c88d-40e8-a464-45f8640d54c3
