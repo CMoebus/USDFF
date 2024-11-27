@@ -26,7 +26,7 @@ md"
 ##### - Replacement of SDFF, ch 2.2 -
 ##### file: PCM20241015\_SDFF\_2.2\_OOP\_The\_Julia(n)\_Way\_I
 ##### libraries: Julia 1.11.1/Pluto 0.20.0/Plots 1.40.8/LinearAlgebra 1.11.0
-##### code: Pluto/Julia-code by PCM *** 2024/11/24 ***
+##### code: Pluto/Julia-code by PCM *** 2024/11/27 ***
 =====================================================================================
 "
 
@@ -90,11 +90,11 @@ md"
 ##### 3. [Concepts](https://en.wikipedia.org/wiki/Concept), Types, Classes, and Instances (= OOP, the Julia(n) way)
 Julia is (like e.g. Scheme) more typical *functional* with *imperative* aspects than *object-orientated*. OOP in Julia is similar but not identical to OOP in mainstream languages. *Structure* and *behaviour* are *decoupled*. *Structure* and *instances* are represented in *types* and *behaviour* in *methods*. There are two kind of types in Julia: *abstract* and *concrete*. When a type is *concrete* then it is similar to mainstream OOP *class*. 
 
-- *Abstract* types control *delegation* of behavior by *multiple dispatch* of *methods*. *Delegation* mimics *inheritance* of classical OOP. An abstract type can posess *methods* but *not* *attributes* in the form of *data fields*. 
+- *Abstract* types control *delegation* of behavior by *multiple dispatch* of *methods*. *Delegation* mimics *inheritance* of classical OOP. An abstract type can possess *methods* but *not* *attributes* in the form of *data fields*. 
 
 - *Concrete* types possess *data fields* and *methods*. They can be *subtyped* to abstract types. The *only* purpose of *concrete* types is the *generation* of *instances*. They are *final* and *cannot* be *subtyped*.
 
-- *Methods* are called with *instances* as *one* of the *arguments*. The method call is *delegated* by *multiple dispatch* to the correct type and implementation. This is called [*structural subtyping*](https://en.wikipedia.org/wiki/Structural_type_system) or [*duck tying*](https://en.wikipedia.org/wiki/Duck_typing). If instance arguments possess *type information* it is called [*nominal (structural) subtyping*](https://en.wikipedia.org/wiki/Nominal_type_system) (Kwong, 2020, ch. 12, p.467). Otherwise it's *without* type information (Kwong, 2020, ch. 12, p.467) and is called [*duck tying*](https://en.wikipedia.org/wiki/Duck_typing). 
+- *Methods* are called with *instances* as *one* of the *arguments*. The method call is *delegated* by *multiple dispatch* to the correct type and implementation. This is called [*structural subtyping*](https://en.wikipedia.org/wiki/Structural_type_system) or [*duck tying*](https://en.wikipedia.org/wiki/Duck_typing). If instance arguments possess *type information* it is called [*nominal (structural) subtyping*](https://en.wikipedia.org/wiki/Nominal_type_system) (Kwong, 2020, ch. 12, p.467). Otherwise it's *without* type information (Kwong, 2020, ch. 12, p.467) and is called [*duck tying*](https://en.wikipedia.org/wiki/Duck_typing). *Methods* dedicated to *abstract* types can use *data fields* of instances which appear in a call of the *method*.
 
 - In our implementation presented here we use *nominal (structural) subtyping*. With an *typified* instance argument the *method call* can be *delegated* along the *subtype-type-supertype hierarchy* to the matching method stored in the correct *abstract* type. So the *call* of an instance with arguments is similar to sending a *message* to an instance.
 
@@ -106,7 +106,8 @@ md"
 In our implementation presented *here* we apply *nominal* behavior *subtyping*:
 - *Concepts* are represented by *types*.
 
-- *Abstract* types are formal *representations* of *concepts*. They can be partially ordered in a *sub-/supertype* hierarchy. The *only* purpose of this hierarchy is to control how behaviour is *delegated* from subtypes to supertypes (or inversely in classical OOP-parliance: *inherited* from supertypes to subtypes). If the subtype has *no* relevant method to react properly the supertype-chain is tried. Unlike in other mainstream OOP languages Julia's abstract types *don't* allow storing *data fields* directly in the type. Instead data fields of instances should be used for computations. 
+- *Abstract* types are formal *representations* of *concepts*. They can be partially ordered in a *sub-/supertype* hierarchy. The *only* purpose of this hierarchy is to control how behaviour is *delegated* from subtypes to supertypes (or inversely in classical OOP-parliance: *inherited* from supertypes to subtypes). If the subtype has *no* relevant method to react properly the *supertype-chain* is tried. Unlike in other mainstream OOP languages Julia's abstract types *don't* allow storing *data fields* directly in the type. Instead data fields of instances should and can be be used for computations. 
+
 This strategy is called *behavior subtyping* (Kwong, 2020, ch.12, p.461) in contrast to *implementation inheritance*. *Implementation inheritance allows a subclass to inherit both fields and methods from its superclass* (Kwong, 2020, ch.12, p.459). *Behavior subtyping* avoids some problems like the [*rectangle-square*](https://en.wikipedia.org/w/index.php?title=Square-rectangle_problem&redirect=no) and the [*ellipse-circle*](https://en.wikipedia.org/wiki/Circle%E2%80%93ellipse_problem) problem.
 
 - *Concrete* types represent *classes* which are *generators* of *possible* values (= *instances, objects*). In our implementation there is an *one-to-one* mapping between abstract and concrete types ('pairing'). Each concrete type is a *final* subtype of the corresponding abstract one. The meaning of *final* is that there is *no* subtyping allowed. *Concrete* types are not declared explicitly like *abstract* types. Instead they are defined implicitly by the $struct$-keyword. The $struct$*ure* automatically provides *generators* for *instances* (= *objects*) with fields defined in the (concrete) type. 
@@ -248,31 +249,91 @@ end
 md"
 ---
 ###### 4.2.2 $describeYourself$-*Method* for *Abstract* Types
-The $describeYourself$-*function* has 13 (!) *method*s (each for an *abstract* type). This has been achieved by Julia's *multiple dispatch*. 
+The $describeYourself$-*function* has 13 (!) *method*s (each for an *abstract* type). The correct *abstract* type is identified by Julia's *multiple dispatch*. Each method uses *data* ($instanceId, typeof(.)$) by importing them from the *instance* in the call.
 "
 
-# ╔═╡ 5e7cbf6a-5410-425a-a49f-5ca2f57b528b
+# ╔═╡ 188a953e-0024-4047-98cc-efa148a7d86e
 begin
 	#--------------------------------------------------------------------------------
-	describeYourself(instance::Polygon) =
-		"This is the description of the abstract type *Polygon*: In geometry, a [polygon](https://en.wikipedia.org/wiki/Polygon) (/ˈpɒlɪɡɒn/) is a plane figure that is described by a finite number of straight line segments connected to form a closed polygonal chain (or polygonal circuit)."
+	function describeYourself(instance::Polygon)
+		instanceInstanceId = instance.instanceId
+		typeOfInstance     = typeof(instance)
+		"This is the instance $instanceInstanceId with type $typeOfInstance and the description of the abstract type *Polygon*: In geometry, a [polygon](https://en.wikipedia.org/wiki/Polygon) (/ˈpɒlɪɡɒn/) is a plane figure that is described by a finite number of straight line segments connected to form a closed polygonal chain (or polygonal circuit)."
+	end # function describeYourself
 	#--------------------------------------------------------------------------------
-	describeYourself(instance::Triangle) = "[Description](https://en.wikipedia.org/wiki/Polygon#Area) of the abstract type *Triangle*: The simplest polygon which can exist in the Euclidean plane. Can tile the plane."
-	describeYourself(instance::Quadrilateral) = "[Description](https://en.wikipedia.org/wiki/Polygon#Area) of the abstract type *Quadrilateral*: The simplest polygon which can cross itself; the simplest polygon which can be concave; the simplest polygon which can be non-cyclic. Can tile the plane."
+	function describeYourself(instance::Triangle)
+		instanceInstanceId = instance.instanceId
+		typeOfInstance     = typeof(instance)
+		"This is the instance $instanceInstanceId with type $typeOfInstance and the [description](https://en.wikipedia.org/wiki/Triangle) of the abstract type *Triangle*: The simplest polygon which can exist in the Euclidean plane. Can tile the plane."
+	end # function describeYourself
+	#---------------------------------------------------
+	function describeYourself(instance::Quadrilateral)
+		instanceInstanceId = instance.instanceId
+		typeOfInstance     = typeof(instance)
+		"This is the instance $instanceInstanceId with type $typeOfInstance and the [description](https://en.wikipedia.org/wiki/Quadrilateral) of the abstract type *Quadrilateral*: The simplest polygon which can cross itself; the simplest polygon which can be concave; the simplest polygon which can be non-cyclic. Can tile the plane."
+	end # function describeYourself
 	#--------------------------------------------------------------------------------
-	describeYourself(instance::IsoscelesTriangle) = "This is the description of the abstract type *IsosceleTriangle*"
-	describeYourself(instance::RightTriangle) = "This is the description of the abstract type *RightTriangle*"
-	describeYourself(instance::EquilateralTriangle) = "This is the description of the abstract type *EquilateralTriangle*"
-	describeYourself(instance::IsoscelesRightTriangle) = "This is the description of the abstract type *IsosceleRightTriangle*"
+	function describeYourself(instance::IsoscelesTriangle) 
+		instanceInstanceId = instance.instanceId
+		typeOfInstance     = typeof(instance)
+		"This is the instance $instanceInstanceId with type $typeOfInstance and the [description](https://en.wikipedia.org/wiki/Isosceles_triangle) of the abstract type *IsosceleTriangle*"
+	end # function describeYourself
+	#---------------------------------------------------
+	function describeYourself(instance::RightTriangle) 
+		instanceInstanceId = instance.instanceId
+		typeOfInstance     = typeof(instance)
+		"This is the instance $instanceInstanceId with type $typeOfInstance and the [description](https://en.wikipedia.org/wiki/Right_triangle) of the abstract type *RightTriangle*"
+	end # function describeYourself
+	#---------------------------------------------------
+	function describeYourself(instance::EquilateralTriangle)
+		instanceInstanceId = instance.instanceId
+		typeOfInstance     = typeof(instance)
+		"This is the instance $instanceInstanceId with type $typeOfInstance and the [description](https://en.wikipedia.org/wiki/Equilateral_triangle) of the abstract type *EquilateralTriangle*"
+	end # function describeYourself
+	#---------------------------------------------------
+	function describeYourself(instance::IsoscelesRightTriangle) 
+		instanceInstanceId = instance.instanceId
+		typeOfInstance     = typeof(instance)
+		"This is the instance $instanceInstanceId with type $typeOfInstance and the [description](https://en.wikipedia.org/wiki/Special_right_triangle) of the abstract type *IsosceleRightTriangle*"
+	end # function describeYourself
 	#--------------------------------------------------------------------------------
-	describeYourself(instance::Trapezoid) = "This is the description of the abstract type *Trapezoid*"
-	describeYourself(instance::Kite) = "This is the description of the abstract type *Kite*"
-	describeYourself(instance::Parallelogram) = "This is the description of the abstract type *Parallelogram*"
-	describeYourself(instance::Rectangle) = "This is the description of the abstract type *Rectangle*"
-	describeYourself(instance::Rhombus) = "This is the description of the abstract type *Rhombus*"
-	describeYourself(instance::Square) = "This is the description of the abstract type *Square*"
+	function describeYourself(instance::Trapezoid)
+		instanceInstanceId = instance.instanceId
+		typeOfInstance     = typeof(instance)
+		"This is the instance $instanceInstanceId with type $typeOfInstance and the [description](https://en.wikipedia.org/wiki/Trapezoid) of the abstract type *Trapezoid*"
+	end # function describeYourself
+	#---------------------------------------------------
+	function describeYourself(instance::Kite) 
+		instanceInstanceId = instance.instanceId
+		typeOfInstance     = typeof(instance)
+		"This is the instance $instanceInstanceId with type $typeOfInstance and the [description](https://en.wikipedia.org/wiki/Kite_(geometry)) of the abstract type *Kite*"
+	end # function describeYourself
+	#---------------------------------------------------
+	function describeYourself(instance::Parallelogram) 
+		instanceInstanceId = instance.instanceId
+		typeOfInstance     = typeof(instance)
+		"This is the instance $instanceInstanceId with type $typeOfInstance and the [description](https://en.wikipedia.org/wiki/Parallelogram) of the abstract type *Parallelogram*"
+	end # function describeYourself
+		#---------------------------------------------------
+	function describeYourself(instance::Rectangle)
+		instanceInstanceId = instance.instanceId
+		typeOfInstance     = typeof(instance)
+		"This is the instance $instanceInstanceId with type $typeOfInstance and the [description](https://en.wikipedia.org/wiki/Rectangle) of the abstract type *Rectangle*"
+	end # function describeYourself
+	#---------------------------------------------------
+	function describeYourself(instance::Rhombus)
+		instanceInstanceId = instance.instanceId
+		typeOfInstance     = typeof(instance)
+		"This is the instance $instanceInstanceId with type $typeOfInstance and the [description](https://en.wikipedia.org/wiki/Rhombus) of the abstract type *Rhombus*"
+	end # function describeYourself
+	#---------------------------------------------------
+	function describeYourself(instance::Square)  
+		instanceInstanceId = instance.instanceId
+		typeOfInstance     = typeof(instance)
+		"This is the instance $instanceInstanceId with type $typeOfInstance and the [description](https://en.wikipedia.org/wiki/Square) of the abstract type *Square*"
+	end # function describeYourself
 	#--------------------------------------------------------------------------------
-end
+end # begin
 
 # ╔═╡ 59fba8d6-b29b-46bf-ba44-9f36e049554b
 md"
@@ -696,7 +757,8 @@ $\;$
 let # area of myTriangle3 as type of Triangles
 	#   *no* delegation of 'area' calculation to supertype !
 	myTriangle3 = 
-		makeInstance(Triangles, [0, 3, 1, 0], [0, 0, 2, 0], "myTriangle3")
+		makeInstance(
+			Triangles, [0, 3, 1, 0], [0, 0, 2, 0], "myTriangle3")
 		display(describeYourself(myTriangle3)); println()
 		display(area(myTriangle3))         # the area should be 3 
 		plot(myTriangle3.shape, aspect_ratio=:equal, xlim=[-0.5, 3.5], ylim=[-0.5, 2.5], fill=:cornflowerblue, opacity=0.4, legend=false, title="$area(myTriangle3)=3.0", titlefontsize=12)
@@ -723,7 +785,8 @@ $\;$
 let # area of myIsoscelesTriangle4
 	#   delegation of 'area' calculation to supertype Triangle !
 	myIsoscelesTriangle4 = 
-		makeInstance(IsoscelesTriangles, [0, 2, 1, 0], [0, 0, 4, 0], "myIsoscelesTriangle4")
+		makeInstance(
+			IsoscelesTriangles, [0, 2, 1, 0], [0, 0, 4, 0], "myIsoscelesTriangle4")
 		display(describeYourself(myIsoscelesTriangle4)); println()
 		# the area should be 4
 		display(area(myIsoscelesTriangle4))  
@@ -747,13 +810,15 @@ $\;$
 
 # ╔═╡ e725c74b-6885-4d8f-a8f5-0d4c89eb6571
 let # area of myEquilatTriangle43
-    #   delegation of 'area' calculation to supertype Triangle !
-	myEquilatTriangle43 = 
-		makeInstance(EquilateralTriangles, [0, 1, 1/2, 0], [0, 0, sqrt(3/4), 0], "myEquilateralTriangle43")
-	    display(describeYourself(myEquilatTriangle43)); println()
+    #   delegation of 'area' calculation to supertype *Triangle* !
+	myEquilatTriangle433 = 
+		makeInstance(
+			EquilateralTriangles, 
+			[0, 1, 1/2, 0], [0, 0, sqrt(3/4), 0], "myEquilateralTriangle433")
+	    display(describeYourself(myEquilatTriangle433)); println()
 		# the area should be 0.433...
-		display(area(myEquilatTriangle43))  
-		plot(myEquilatTriangle43.shape, aspect_ratio=:equal, xlim=[-0.5, 1.5], ylim=[-0.5, 1.5], fill=:cornflowerblue, opacity=0.4, legend =false, title="$area(myEquilatTriangle43)=0.433...", titlefontsize=12)
+		display(area(myEquilatTriangle433))  
+		plot(myEquilatTriangle433.shape, aspect_ratio=:equal, xlim=[-0.5, 1.5], ylim=[-0.5, 1.5], fill=:cornflowerblue, opacity=0.4, legend =false, title="$area(myEquilatTriangle43)=0.433...", titlefontsize=12)
 end # let
 
 # ╔═╡ a62e7c3f-02af-40e8-a54b-92a317d41539
@@ -774,7 +839,8 @@ $\;$
 let # area of myRightTriangle193
     #   delegation of 'area' calculation to supertype Triangle !
 	myRightTriangle193 = 
-		makeInstance(RightTriangles, [0, 4, 1/4, 0], [0, 0, sqrt(15)/4, 0], "myRightTriangle193")
+		makeInstance(RightTriangles, 
+			[0, 4, 1/4, 0], [0, 0, sqrt(15)/4, 0], "myRightTriangle193")
 	    display(describeYourself(myRightTriangle193)); println()
 		# the area should be 1.936..
 		display(area(myRightTriangle193))  
@@ -799,7 +865,9 @@ $\;$
 let # area of myIsoscelesRightTriangle12
     #   delegation of 'area' calculation to supertype Triangle !
 	myIsoscelesRightTriangle12 = 
-		makeInstance(IsoscelesRightTriangles, [0, sqrt(2), (1/2)*sqrt(2), 0], [0,    0, sqrt(1/2), 0], "myIsoscelesRightTriangle12")
+		makeInstance(
+			IsoscelesRightTriangles, 
+			[0, sqrt(2), (1/2)*sqrt(2), 0], [0,    0, sqrt(1/2), 0], "myIsoscelesRightTriangle12")
 	    display(describeYourself(myIsoscelesRightTriangle12)); println()
 		# the area should be 1/2
 		display(area(myIsoscelesRightTriangle12))  
@@ -818,7 +886,8 @@ The area calculation of all *Quadrilaterals* besides *Squares* is *delegated* to
 let # area of myQuadrilateral9
     # delegation of 'area' computation to supertype Polygon !
 	myQuadrilateral9 = 
-		makeInstance(Quadrilaterals, [0, 5, 4, 2, 0], [0, 0, 2, 3, 0], "myQuadrilateral9")
+		makeInstance(
+			Quadrilaterals, [0, 5, 4, 2, 0], [0, 0, 2, 3, 0], "myQuadrilateral9")
 	    display(describeYourself(myQuadrilateral9)); println()
 		# the area should be 9
 		display(area(myQuadrilateral9))  
@@ -847,7 +916,8 @@ $\;$
 let # area of myTrapezoid7
     # delegation of 'area' computation to supertype Polygon !
 	myTrapezoid7 = 
-		makeInstance(Trapezoids, [0, 5, 3, 1, 0], [0, 0, 2, 2, 0], "myTrapezoid")
+		makeInstance(
+			Trapezoids, [0, 5, 3, 1, 0], [0, 0, 2, 2, 0], "myTrapezoid7")
 	    display(describeYourself(myTrapezoid7)); println()
 		# the area should be 7
 		display(area(myTrapezoid7))  
@@ -870,9 +940,10 @@ $\;$
 
 # ╔═╡ f9833ab8-3ce6-42ff-a7cc-53c17e290c2a
 let # area of myParallelogram3
-    # delegation of 'area' computation to supertype Polygon !
+    # delegation of 'area' computation to supertype *Polygon* !
 	myParallelogram3 = 
-		makeInstance(Parallelograms, [0, 3, 4, 1, 0], [0, 0, 1, 1, 0], "myParallelogram3")
+		makeInstance(
+			Parallelograms, [0, 3, 4, 1, 0], [0, 0, 1, 1, 0], "myParallelogram3")
 	    display(describeYourself(myParallelogram3)); println()
 		# the area should be 3
 		display(area(myParallelogram3))  
@@ -899,7 +970,8 @@ $\;$
 let # area of myRectangle3
     # *no* delegation of 'area' computation !
 	myRectangle3 = 
-		makeInstance(Rectangles, [0, 3, 3, 0, 0], [0, 0, 1, 1, 0], "myRectangle3")
+		makeInstance(
+			Rectangles, [0, 3, 3, 0, 0], [0, 0, 1, 1, 0], "myRectangle3")
 	    display(describeYourself(myRectangle3)); println()
 		# the area should be 3
 		display(area(myRectangle3))  
@@ -930,7 +1002,8 @@ $\;$
 let # area of mySquare
     # *no* delegation of 'area' computation !
 	mySquare225 = 
-		makeInstance(Squares, [0, 1.5, 1.5, 0, 0], [0, 0, 1.5, 1.5, 0], "mySquare")
+		makeInstance(
+			Squares, [0, 1.5, 1.5, 0, 0], [0, 0, 1.5, 1.5, 0], "*mySquare225*")
 	    display(describeYourself(mySquare225)); println()
 		# the area should be 2.25
 		display(area(mySquare225))  
@@ -956,7 +1029,8 @@ $\;$
 let # area of unit Kite (=rhombus)
     # delegation of 'area' computation to supertype Polygon
 	myRhombus4 = 
-		makeInstance(Rhombi, [0, 1, 2, 1, 0], [2, 0, 2, 4, 2], "myRhombus")
+		makeInstance(
+			Rhombi, [0, 1, 2, 1, 0], [2, 0, 2, 4, 2], "myRhombus4")
 	    display(describeYourself(myRhombus4)); println()
 		# the area should be 4
 		display(area(myRhombus4))  
@@ -981,7 +1055,8 @@ $\;$
 let # area of myKite4
     # delegation of 'area' computation to supertype Polygon
 	myKite4 = 
-		makeInstance(Kites, [1, 2, 1, 0, 1], [0, 3, 4, 3, 0], "myKite4")
+		makeInstance(
+			Kites, [1, 2, 1, 0, 1], [0, 3, 4, 3, 0], "myKite4")
 	    display(describeYourself(myKite4)); println()
 		# the area should be 4
 		display(area(myKite4))  
@@ -2337,7 +2412,7 @@ version = "1.4.1+1"
 # ╟─b159dca0-674f-41d8-97e3-272837babd48
 # ╠═07580187-c952-480d-a8e9-e9970c310d7f
 # ╟─c8e6be77-ad60-40f4-95ed-996c6e5e5ef8
-# ╠═5e7cbf6a-5410-425a-a49f-5ca2f57b528b
+# ╠═188a953e-0024-4047-98cc-efa148a7d86e
 # ╟─59fba8d6-b29b-46bf-ba44-9f36e049554b
 # ╠═1ea65c72-a7ac-4af2-8a1e-b2d9c8a8305d
 # ╠═8dab1af0-5a6a-423e-b5d5-c80c2621b300
