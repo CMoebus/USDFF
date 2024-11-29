@@ -26,7 +26,7 @@ md"
 ##### - Replacement of SDFF, ch 2.2 -
 ##### file: PCM20241015\_SDFF\_2.2\_OOP\_The\_Julia(n)\_Way\_I
 ##### libraries: Julia 1.11.1/Pluto 0.20.0/Plots 1.40.8/LinearAlgebra 1.11.0
-##### code: Pluto/Julia-code by PCM *** 2024/11/27 ***
+##### code: Pluto/Julia-code by PCM *** 2024/11/29 ***
 =====================================================================================
 "
 
@@ -400,48 +400,6 @@ md"
 ###### 4.2.3.3 Test of Subtypes of *Abstract* Types
 "
 
-# ╔═╡ 0cd48b25-2e2c-4f07-b21f-efc966cd44ed
-subtypes(Polygon)
-
-# ╔═╡ d3ee78a8-7d54-40a4-aebc-3badc4492200
-subtypes(Triangle)
-
-# ╔═╡ 126eeefd-fce9-43e6-9368-1b5f7acdf998
-subtypes(Quadrilateral)
-
-# ╔═╡ e1c0e36c-75f2-4c90-8d89-2e7c7fa72fc1
-subtypes(Kite)                
-
-# ╔═╡ 0f99f7f4-283a-4436-9699-21e72e366cff
-subtypes(IsoscelesTriangle)   
-
-# ╔═╡ 8eb6a7da-f55f-4a94-bdb8-f3b5b588336d
-subtypes(RightTriangle)
-
-# ╔═╡ a1316749-2b52-47d5-a14f-3dc658782809
-subtypes(Trapezoid)
-
-# ╔═╡ 1482b66d-b644-4103-bd68-f207a726376e
-subtypes(Parallelogram)      
-
-# ╔═╡ 18105544-4995-4be1-b9f9-4d6cdd874259
-subtypes(Rectangle)
-
-# ╔═╡ 789dc614-ebb6-41ad-a8ff-c9d71a9e4f27
-subtypes(Rhombus)
-
-# ╔═╡ e0de8e5c-c82f-40d8-ae30-399941a6061c
-subtypes(EquilateralTriangle)
-
-# ╔═╡ f83f115d-cc4d-4043-8aa7-f4ece85f44c1
-subtypes(IsoscelesRightTriangle)
-
-# ╔═╡ d8ff346e-ea81-4453-a957-bd23639d8b84
-subtypes(Square)
-
-# ╔═╡ b7d762bb-64ec-47c5-a1da-b6c7cda5abaf
-Shape, subtypes(Shape), typeof(Shape), supertype(Shape)
-
 # ╔═╡ e735872f-de04-4b9b-a40c-3f2d8747b10c
 begin 
 	#-------------------------------------------------------------------------------
@@ -500,17 +458,73 @@ begin
 	end # Squares
 end
 
+# ╔═╡ 0cd48b25-2e2c-4f07-b21f-efc966cd44ed
+subtypes(Polygon)
+
+# ╔═╡ d3ee78a8-7d54-40a4-aebc-3badc4492200
+subtypes(Triangle)
+
+# ╔═╡ 126eeefd-fce9-43e6-9368-1b5f7acdf998
+subtypes(Quadrilateral)
+
+# ╔═╡ e1c0e36c-75f2-4c90-8d89-2e7c7fa72fc1
+subtypes(Kite)                
+
+# ╔═╡ 0f99f7f4-283a-4436-9699-21e72e366cff
+subtypes(IsoscelesTriangle)   
+
+# ╔═╡ 8eb6a7da-f55f-4a94-bdb8-f3b5b588336d
+subtypes(RightTriangle)
+
+# ╔═╡ a1316749-2b52-47d5-a14f-3dc658782809
+subtypes(Trapezoid)
+
+# ╔═╡ 1482b66d-b644-4103-bd68-f207a726376e
+subtypes(Parallelogram)      
+
+# ╔═╡ 18105544-4995-4be1-b9f9-4d6cdd874259
+subtypes(Rectangle)
+
+# ╔═╡ 789dc614-ebb6-41ad-a8ff-c9d71a9e4f27
+subtypes(Rhombus)
+
+# ╔═╡ e0de8e5c-c82f-40d8-ae30-399941a6061c
+subtypes(EquilateralTriangle)
+
+# ╔═╡ f83f115d-cc4d-4043-8aa7-f4ece85f44c1
+subtypes(IsoscelesRightTriangle)
+
+# ╔═╡ d8ff346e-ea81-4453-a957-bd23639d8b84
+subtypes(Square)
+
+# ╔═╡ b7d762bb-64ec-47c5-a1da-b6c7cda5abaf
+Shape, subtypes(Shape), typeof(Shape), supertype(Shape)
+
 # ╔═╡ 79a5aabc-220f-4193-bedf-c1e55a0fb5e3
 md"
 ---
 ###### 4.3.2 Generation of *Instances* (= Objects) of *Concrete* Type
 "
 
+# ╔═╡ 72a3e942-202b-4e74-8a8b-794eb246da8d
+setOfConcreteTypes = 
+	Set([Polygons, Triangles, Quadrilaterals, IsoscelesTriangles, RightTriangles, Trapezoids, Kites, Parallelograms, Rectangles, Rhombi, EquilateralTriangles, IsoscelesRightTriangles, Squares])
+
+# ╔═╡ ea0186fb-9bfe-4d5a-8575-69c2c09a82f0
+in(Polygons, setOfConcreteTypes)
+
+# ╔═╡ 8b3c8e7d-3211-4de7-9783-c38416a2a42c
+in(Squares, setOfConcreteTypes)
+
 # ╔═╡ e6b2f2cc-3772-491f-8c8a-7888fb5a6d0a
 function makeInstance(concreteType::DataType, xs::Vector, ys::Vector, instanceId::String)
 	# parameter concreteType must be a *concrete* type not an *abstract* one !
 	# xs, ys, and instanceId are fields of the *concrete* type
-	concreteType(xs, ys, instanceId, Shape(xs, ys))     # call of instance generator 
+	if  in(concreteType, setOfConcreteTypes) == false
+		error(">>> type error: $concreteType not a concrete type")
+	else 
+		concreteType(xs, ys, instanceId, Shape(xs, ys)) # call of instance generator 
+	end # if
 end # function makeInstance
 
 # ╔═╡ b349d4a8-3708-449e-9b60-8d9acc12446e
@@ -2433,6 +2447,7 @@ version = "1.4.1+1"
 # ╠═ad5855d6-deb9-4489-b832-7636953230e8
 # ╠═709c6ceb-dce6-4076-83ad-6de86ee9baee
 # ╟─441376de-c244-47f8-95d0-29fd184e51af
+# ╠═e735872f-de04-4b9b-a40c-3f2d8747b10c
 # ╠═0cd48b25-2e2c-4f07-b21f-efc966cd44ed
 # ╠═d3ee78a8-7d54-40a4-aebc-3badc4492200
 # ╠═126eeefd-fce9-43e6-9368-1b5f7acdf998
@@ -2447,8 +2462,10 @@ version = "1.4.1+1"
 # ╠═f83f115d-cc4d-4043-8aa7-f4ece85f44c1
 # ╠═d8ff346e-ea81-4453-a957-bd23639d8b84
 # ╠═b7d762bb-64ec-47c5-a1da-b6c7cda5abaf
-# ╠═e735872f-de04-4b9b-a40c-3f2d8747b10c
 # ╟─79a5aabc-220f-4193-bedf-c1e55a0fb5e3
+# ╠═72a3e942-202b-4e74-8a8b-794eb246da8d
+# ╠═ea0186fb-9bfe-4d5a-8575-69c2c09a82f0
+# ╠═8b3c8e7d-3211-4de7-9783-c38416a2a42c
 # ╠═e6b2f2cc-3772-491f-8c8a-7888fb5a6d0a
 # ╟─b349d4a8-3708-449e-9b60-8d9acc12446e
 # ╟─b157b0b0-9663-4a6c-ae39-0dd71a02fdf6
